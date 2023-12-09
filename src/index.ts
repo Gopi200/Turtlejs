@@ -1,63 +1,57 @@
 import {WebSocketServer} from "ws"
 import turtle from "./turtle"
 import fs from "fs"
-import path from "path"
 
 const slurs = ["Asshole", "Baboon", "Chinky", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
-declare var __dirname;
-
-import * as connectionsjson from "./turtles.json"
-//Put inside turtleserver
-export var connections: {[k: string]: turtle} = {};
-for (const key of Object.keys(connectionsjson)) {
-  connections[key] = new turtle()
-  Object.setPrototypeOf(connections[key], turtle.prototype)
-}
-delete connections["default"]
-
-export var savedconn = connections
-
-function add_connection(label:string,turt:turtle){
-  connections[label] = turt
-  for (const key of Object.keys(connections)){
-    const { ws, ...turtn } = eval(`connections.${key}`)
-    savedconn[key] = turtn
-  }
-  fs.writeFile(__dirname+"/turtles.json", JSON.stringify(savedconn), (err) => {
-    if (err) {
-      console.log(err)
-    }
-  })
-  return label
-}
 
 export default class TurtleServer{
   private wss:typeof WebSocketServer;
+  connections;
+  savedconn;
+
+  private add_connection(label:string,turt:turtle){
+    this.connections[label] = turt
+    const { ws, ...turtn } = this.connections[label]
+    this.savedconn[label] = turtn
+    fs.writeFile("./data/turtles.json", JSON.stringify(this.savedconn), (err) => {
+      if (err) {
+        console.log(err)
+      }
+    })
+    return label
+  }
+
+  private message(data, ws) {
+    let datal = data.toString().split("\n")
+      console.log(datal)
+      switch (datal[0]) {
+        case "No label":
+          ws.send(`func-None\nos.setComputerLabel(\"${this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length/slurs.length), new turtle(ws))}\")`)
+          break;
+        case "label":
+          this.connections[datal[1]].ws = ws
+          break
+        default:
+          this.connections[datal[0]].returned = datal[1]
+          break;
+    }
+  }
+
+  private connection(ws:typeof WebSocketServer){
+    ws.on('message', (data:string)=>this.message(data,ws))
+  }
 
   constructor(port: number){
     this.wss = new WebSocketServer({ port });
 
-    this.wss.on('connection', function connection(ws:typeof WebSocketServer) {
-      ws.on('message', function message(data:string) {
-        let datal = data.toString().split("\n")
-        console.log(datal)
-        switch (datal[0]) {
-          case "No label":
-            ws.send(`func-None\nos.setComputerLabel(\"${add_connection(slurs[Object.keys(connections).length % slurs.length] + Math.floor(Object.keys(connections).length/slurs.length), new turtle(ws))}\")`)
-            break;
-          case "label":
-            connections[datal[1]].ws = ws
-            break
-          default:
-            connections[datal[0]].returned = datal[1]
-            break;
-        }
-      });
+    try {this.connections = JSON.parse(fs.readFileSync("./data/turtles.json", "utf-8"), (key, value)=>{Object.setPrototypeOf(value, turtle.prototype); return value})}
+    catch(err) {console.error(err)}
     
-      ws.on('error', console.error);
-    
-    });
+    for (const key of Object.keys(this.connections)){
+      const { ws, ...turtn } = this.connections[key]
+      this.savedconn[key] = turtn
+    }
+
+    this.wss.on('connection', (ws:typeof WebSocketServer)=>this.connection(ws))
   }
 }
-
-console.log("Server up")
