@@ -14,7 +14,7 @@ for (const key of Object.keys(connectionsjson)) {
 }
 delete connections["default"]
 
-var savedconn: {[a: string]:turtle } = {}
+export var savedconn: {[a: string]:turtle } = {}
 
 function add_connection(label:string,turt:turtle){
   connections[label] = turt
@@ -58,7 +58,5 @@ export default class TurtleServer{
     });
   }
 }
-
-const server = new TurtleServer(25565)
 
 console.log("Server up")

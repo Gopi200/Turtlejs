@@ -22,15 +22,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -46,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.savedconn = void 0;
 const ws_1 = require("ws");
 const turtle_1 = __importDefault(require("./turtle"));
 const fs_1 = __importDefault(require("fs"));
@@ -57,14 +49,14 @@ for (const key of Object.keys(connectionsjson)) {
     Object.setPrototypeOf(connections[key], turtle_1.default.prototype);
 }
 delete connections["default"];
-var savedconn = {};
+exports.savedconn = {};
 function add_connection(label, turt) {
     connections[label] = turt;
     for (const key of Object.keys(connections)) {
         const _a = eval(`connections.${key}`), { ws } = _a, turtn = __rest(_a, ["ws"]);
-        savedconn[key] = turtn;
+        exports.savedconn[key] = turtn;
     }
-    fs_1.default.writeFile(__dirname + "/turtles.json", JSON.stringify(savedconn), (err) => {
+    fs_1.default.writeFile(__dirname + "/turtles.json", JSON.stringify(exports.savedconn), (err) => {
         if (err) {
             console.log(err);
         }
@@ -95,6 +87,4 @@ class TurtleServer {
     }
 }
 exports.default = TurtleServer;
-const server = new TurtleServer(25565);
 console.log("Server up");
-setTimeout(() => __awaiter(void 0, void 0, void 0, function* () { console.log(yield connections.Asshole0.getfuellevel()); console.log(yield connections.Asshole0.refuel(5)); console.log(yield connections.Asshole0.moveforward()); console.log(yield connections.Asshole0.moveforward()); console.log(yield connections.Asshole0.moveforward()); console.log(yield connections.Baboon0.refuel(1)); console.log(yield connections.Baboon0.moveforward()); }), 10000);
