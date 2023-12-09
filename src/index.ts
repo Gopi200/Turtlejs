@@ -7,14 +7,15 @@ const slurs = ["Asshole", "Baboon", "Chinky", "Dickhead", "Egghead", "Fuckface",
 declare var __dirname;
 
 import * as connectionsjson from "./turtles.json"
-var connections: {[k: string]: turtle} = {};
+//Put inside turtleserver
+export var connections: {[k: string]: turtle} = {};
 for (const key of Object.keys(connectionsjson)) {
   connections[key] = new turtle()
   Object.setPrototypeOf(connections[key], turtle.prototype)
 }
 delete connections["default"]
 
-export var savedconn: {[a: string]:turtle } = {}
+export var savedconn = connections
 
 function add_connection(label:string,turt:turtle){
   connections[label] = turt

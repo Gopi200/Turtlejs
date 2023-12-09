@@ -37,22 +37,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.savedconn = void 0;
+exports.savedconn = exports.connections = void 0;
 const ws_1 = require("ws");
 const turtle_1 = __importDefault(require("./turtle"));
 const fs_1 = __importDefault(require("fs"));
 const slurs = ["Asshole", "Baboon", "Chinky", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"];
 const connectionsjson = __importStar(require("./turtles.json"));
-var connections = {};
+//Put inside turtleserver
+exports.connections = {};
 for (const key of Object.keys(connectionsjson)) {
-    connections[key] = new turtle_1.default();
-    Object.setPrototypeOf(connections[key], turtle_1.default.prototype);
+    exports.connections[key] = new turtle_1.default();
+    Object.setPrototypeOf(exports.connections[key], turtle_1.default.prototype);
 }
-delete connections["default"];
-exports.savedconn = {};
+delete exports.connections["default"];
+exports.savedconn = exports.connections;
 function add_connection(label, turt) {
-    connections[label] = turt;
-    for (const key of Object.keys(connections)) {
+    exports.connections[label] = turt;
+    for (const key of Object.keys(exports.connections)) {
         const _a = eval(`connections.${key}`), { ws } = _a, turtn = __rest(_a, ["ws"]);
         exports.savedconn[key] = turtn;
     }
@@ -72,13 +73,13 @@ class TurtleServer {
                 console.log(datal);
                 switch (datal[0]) {
                     case "No label":
-                        ws.send(`func-None\nos.setComputerLabel(\"${add_connection(slurs[Object.keys(connections).length % slurs.length] + Math.floor(Object.keys(connections).length / slurs.length), new turtle_1.default(ws))}\")`);
+                        ws.send(`func-None\nos.setComputerLabel(\"${add_connection(slurs[Object.keys(exports.connections).length % slurs.length] + Math.floor(Object.keys(exports.connections).length / slurs.length), new turtle_1.default(ws))}\")`);
                         break;
                     case "label":
-                        connections[datal[1]].ws = ws;
+                        exports.connections[datal[1]].ws = ws;
                         break;
                     default:
-                        connections[datal[0]].returned = datal[1];
+                        exports.connections[datal[0]].returned = datal[1];
                         break;
                 }
             });
