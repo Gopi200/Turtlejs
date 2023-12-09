@@ -1,0 +1,368 @@
+export default class turtle{
+    ws;
+    returned;
+    private waitingit = 0
+    constructor(ws?:WebSocket){
+        this.ws = ws
+    }
+
+    private async receive(){
+        while(this.returned == undefined && this.waitingit<50){
+          await new Promise(resolve => setTimeout(resolve, 100))
+          this.waitingit+=1
+        }
+        if (this.waitingit>=50){
+          return "Nothing"
+        }
+        else{var temp = this.returned; this.returned = undefined; return temp}
+    }
+
+    /** 
+     * 	Craft a recipe based on the turtle's inventory. The turtle cannot contain any items other than the ones involved in the recipe.
+    */
+    async craft(count?:number){
+        this.ws.send(`func-Any\nturtle.craft(${count})`)
+        return await this.receive()
+    }
+    
+    /** 
+     * 	Move the turtle forward one block.
+    */
+    async moveForward(){
+        this.ws.send("func-Any\nturtle.forward()")
+        return await this.receive()
+    }
+
+    /** 
+     * 	Move the turtle back one block.
+    */
+    async moveBackward(){
+        this.ws.send("func-Any\nturtle.back()")
+        return await this.receive()
+    }
+
+    /** 
+     * 	Move the turtle up one block.
+    */
+    async moveUp(){
+        this.ws.send("func-Any\nturtle.up()")
+        return await this.receive()
+    }
+
+    /** 
+     * 	Move the turtle down one block.
+    */
+    async moveDown(){
+        this.ws.send("func-Any\nturtle.down()")
+        return await this.receive()
+    }
+
+    /** 
+     * 	Rotate the turtle to the left by 90 degrees.
+    */
+    async turnLeft(){
+        this.ws.send("func-Any\nturtle.turnLeft()")
+        return await this.receive()
+    }
+
+    /** 
+     * 	Rotate the turtle to the right by 90 degrees.
+    */
+    async turnRight(){
+        this.ws.send("func-Any\nturtle.turnRight()")
+        return await this.receive()
+    }
+
+    /** 
+     *  Break the block in front of the turtle.
+    */
+    async digFront(side?){
+        this.ws.send(`func-Any\nturtle.dig(${side})`)
+        return await this.receive()
+    }
+
+    /** 
+     *  Break the block above the turtle.
+    */
+    async digUp(side?){
+        this.ws.send(`func-Any\nturtle.digUp(${side})`)
+        return await this.receive()
+    }
+
+    /** 
+     *  Break the block below the turtle.
+    */
+    async digDown(side?){
+        this.ws.send(`func-Any\nturtle.digDown(${side})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Place a block or item into the world in front of the turtle. Placing an item that is not a block interacts with the block in front of the turtle.
+     *  @param text The text that will be put on a sign if that is what was placed.
+    */
+    async placeFront(text?:string){
+        this.ws.send(`func-Any\nturtle.place(${text})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Place a block or item into the world above the turtle. Placing an item that is not a block interacts with the block above the turtle.
+     *  @param text The text that will be put on a sign if that is what was placed.
+    */
+    async placeUp(text?:string){
+        this.ws.send(`func-Any\nturtle.placeUp(${text})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Place a block or item into the world below the turtle. Placing an item that is not a block interacts with the block below the turtle.
+     *  @param text The text that will be put on a sign if that is what was placed.
+    */
+    async placeDown(text?:string){
+        this.ws.send(`func-Any\nturtle.placeDown(${text})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Drop an amount of items off the currently selected stack into the inventory in front of the turtle, or as an item into the world if there is no inventory.
+    */
+    async dropFront(count?:number){
+        this.ws.send(`func-Any\nturtle.drop(${count})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Drop an amount of items off the currently selected stack into the inventory above the turtle, or as an item into the world if there is no inventory.
+    */
+    async dropUp(count?:number){
+        this.ws.send(`func-Any\nturtle.dropUp(${count})`)
+        return await this.receive()
+    }
+
+    /** 
+     * Drop an amount of items off the currently selected stack into the inventory below the turtle, or as an item into the world if there is no inventory.
+    */
+    async dropDown(count?:number){
+        this.ws.send(`func-Any\nturtle.dropDown(${count})`)
+        return await this.receive()
+    }
+
+    /** 
+     * Change the currently selected slot.
+    */
+    async select(slot:number){
+        this.ws.send(`func-Any\nturtle.select(${slot})`)
+        return await this.receive()
+    }
+
+    /** 
+     * Get the amount of items in the specified slot (default selected)
+    */
+    async getItemCount(slot?:number){
+        this.ws.send(`func-Any\nturtle.getItemCount(${slot})`)
+        return await this.receive()
+    }
+
+    /** 
+     * Get the amount of items that can still be put in the stack in the specified slot (default selected)
+    */
+    async getItemSpace(slot?:number){
+        this.ws.send(`func-Any\nturtle.getItemCount(${slot})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Check if there is a solid block in front of the turtle.
+    */
+    async detectFront(){
+        this.ws.send(`func-Any\nturtle.detect()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Check if there is a solid block above the turtle.
+    */
+    async detectUp(){
+        this.ws.send(`func-Any\nturtle.detectUp()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Check if there is a solid block below the turtle.
+    */
+    async detectDown(){
+        this.ws.send(`func-Any\nturtle.detectDown()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Check if the block in front of the turtle is equal to the item in the currently selected slot.
+    */
+    async compareFront(){
+        this.ws.send(`func-Any\nturtle.compare()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Check if the block above the turtle is equal to the item in the currently selected slot.
+    */
+    async compareUp(){
+        this.ws.send(`func-Any\nturtle.compareUp()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Check if the block below the turtle is equal to the item in the currently selected slot.
+    */
+    async compareDown(){
+        this.ws.send(`func-Any\nturtle.compareDown()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Attack the entity in front of the turtle with the tool on the specified side.
+    */
+    async attackFront(side?:string){
+        this.ws.send(`func-Any\nturtle.attack(${side})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Attack the entity above the turtle with the tool on the specified side.
+    */
+    async attackUp(side?:string){
+        this.ws.send(`func-Any\nturtle.attackUp(${side})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Attack the entity below the turtle with the tool on the specified side.
+    */
+    async attackDown(side?:string){
+        this.ws.send(`func-Any\nturtle.attackDown(${side})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Suck an item from the inventory in front of the turtle, or from an item floating in the world.
+    */
+    async suckFront(count?:number){
+        this.ws.send(`func-Any\nturtle.suck(${count})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Suck an item from the inventory above the turtle, or from an item floating in the world.
+    */
+    async suckUp(count?:number){
+        this.ws.send(`func-Any\nturtle.suckUp(${count})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Suck an item from the inventory below the turtle, or from an item floating in the world.
+    */
+    async suckDown(count?:number){
+        this.ws.send(`func-Any\nturtle.suckDown(${count})`)
+        return await this.receive()
+    }
+
+    /**
+     * Get the amount of fuel this turtle currently holds
+     */
+    async getFuelLevel(){
+        this.ws.send("func-Any\nturtle.getFuelLevel()")
+        return await this.receive()
+    }
+
+    /**
+     * Refuel this turtle
+     */
+    async refuel(count?:number){
+        this.ws.send(`func-Any\nturtle.refuel(${count})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Compare the item in the currently selected slot to the item in another slot.
+    */
+    async compareTo(slot:number){
+        this.ws.send(`func-Any\nturtle.compareTo(${slot})`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Move a specified amount of items from the selected slot to another one.
+    */
+    async transferTo(slot:number, count?:string){
+        if (count) {this.ws.send(`func-Any\nturtle.tranferTo(${slot}, ${count})`)}
+        else {this.ws.send(`func-Any\nturtle.transferTo(${slot})`)}
+        return await this.receive()
+    }
+
+    /** 
+     * 	Get the currently selected slot.
+    */
+    async getSelectedSlot(){
+        this.ws.send(`func-Any\nturtle.getSelectedSlot()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Get the maximum amount of fuel this turtle can hold.
+    */
+     async getFuelLimit(){
+        this.ws.send(`func-Any\nturtle.getFuelLimit()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Equips the currently selected item to the left slot of the turtle. If no item is selected only the currently equipped item will be unequipped.
+    */
+     async equipLeft(){
+        this.ws.send(`func-Any\nturtle.equipLeft()`)
+        return await this.receive()
+    }
+
+    /** 
+     * 	Equips the currently selected item to the right slot of the turtle. If no item is selected only the currently equipped item will be unequipped.
+    */
+    async equipRight(){
+        this.ws.send(`func-Any\nturtle.equipRight()`)
+        return await this.receive()
+    }
+
+    /**
+     * 	Get information about the block in front of the turtle.
+     */
+    async inspect(){
+        this.ws.send("func-Any\nturtle.inspect()")
+        return await this.receive()
+    }
+
+    /**
+     * 	Get information about the block above the turtle.
+     */
+    async inspectUp(){
+        this.ws.send("func-Any\nturtle.inspectUp()")
+        return await this.receive()
+    }
+
+    /**
+     * 	Get information about the block in front of the turtle.
+     */
+    async inspectDown(){
+        this.ws.send("func-Any\nturtle.inspectDown()")
+        return await this.receive()
+    }
+
+    /** 
+     * 	Get detailed information about the items in the given slot. Boolean detailed gives even more info in exchange for taking longer to run.
+    */
+    async getItemDetail(slot?:number, detailed?:boolean){
+        if (detailed) {this.ws.send(`func-Any\nturtle.tranferTo(${slot}, ${detailed})`)}
+        else {this.ws.send(`func-Any\nturtle.transferTo(${slot})`)}
+        return await this.receive()
+    }
+}
