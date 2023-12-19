@@ -1,20 +1,22 @@
 export default class turtle{
-    ws;
-    returned;
+    ws:WebSocket
+    returned = ""
     private waitingit = 0
-    constructor(ws?:WebSocket){
+    constructor(ws:WebSocket){
         this.ws = ws
     }
 
-    private async receive(){
-        while(this.returned == undefined && this.waitingit<50){
-          await new Promise(resolve => setTimeout(resolve, 100))
-          this.waitingit+=1
+    private async receive(timeout_iteration?:number){
+        var timed_out = false
+        while(this.returned == ""){
+            if (timeout_iteration) {if(this.waitingit>timeout_iteration){timed_out = true; break}}
+            await new Promise(resolve => setTimeout(resolve, 100))
+            this.waitingit+=1
         }
-        if (this.waitingit>=50){
-          return "Nothing"
+        if (timed_out){
+        return "Nothing"
         }
-        else{var temp = this.returned; this.returned = undefined; return temp}
+        else{var temp = `[${this.returned.slice(1,-1)}]`; this.returned = ""; return temp}
     }
 
     /** 
@@ -22,7 +24,7 @@ export default class turtle{
     */
     async craft(count?:number){
         this.ws.send(`func-Any\nturtle.craft(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
     
     /** 
@@ -30,7 +32,7 @@ export default class turtle{
     */
     async moveForward(){
         this.ws.send("func-Any\nturtle.forward()")
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -38,7 +40,7 @@ export default class turtle{
     */
     async moveBackward(){
         this.ws.send("func-Any\nturtle.back()")
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -46,7 +48,7 @@ export default class turtle{
     */
     async moveUp(){
         this.ws.send("func-Any\nturtle.up()")
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -54,7 +56,7 @@ export default class turtle{
     */
     async moveDown(){
         this.ws.send("func-Any\nturtle.down()")
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -62,7 +64,7 @@ export default class turtle{
     */
     async turnLeft(){
         this.ws.send("func-Any\nturtle.turnLeft()")
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -70,31 +72,31 @@ export default class turtle{
     */
     async turnRight(){
         this.ws.send("func-Any\nturtle.turnRight()")
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
      *  Break the block in front of the turtle.
     */
-    async digFront(side?){
+    async digFront(side?:"left" | "right"){
         this.ws.send(`func-Any\nturtle.dig(${side})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
      *  Break the block above the turtle.
     */
-    async digUp(side?){
+    async digUp(side?:"left" | "right"){
         this.ws.send(`func-Any\nturtle.digUp(${side})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
      *  Break the block below the turtle.
     */
-    async digDown(side?){
+    async digDown(side?:"left" | "right"){
         this.ws.send(`func-Any\nturtle.digDown(${side})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -103,7 +105,7 @@ export default class turtle{
     */
     async placeFront(text?:string){
         this.ws.send(`func-Any\nturtle.place(${text})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -112,7 +114,7 @@ export default class turtle{
     */
     async placeUp(text?:string){
         this.ws.send(`func-Any\nturtle.placeUp(${text})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -121,7 +123,7 @@ export default class turtle{
     */
     async placeDown(text?:string){
         this.ws.send(`func-Any\nturtle.placeDown(${text})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -129,7 +131,7 @@ export default class turtle{
     */
     async dropFront(count?:number){
         this.ws.send(`func-Any\nturtle.drop(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -137,7 +139,7 @@ export default class turtle{
     */
     async dropUp(count?:number){
         this.ws.send(`func-Any\nturtle.dropUp(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -145,7 +147,7 @@ export default class turtle{
     */
     async dropDown(count?:number){
         this.ws.send(`func-Any\nturtle.dropDown(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -153,7 +155,7 @@ export default class turtle{
     */
     async select(slot:number){
         this.ws.send(`func-Any\nturtle.select(${slot})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -161,7 +163,7 @@ export default class turtle{
     */
     async getItemCount(slot?:number){
         this.ws.send(`func-Any\nturtle.getItemCount(${slot})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -169,7 +171,7 @@ export default class turtle{
     */
     async getItemSpace(slot?:number){
         this.ws.send(`func-Any\nturtle.getItemCount(${slot})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -177,7 +179,7 @@ export default class turtle{
     */
     async detectFront(){
         this.ws.send(`func-Any\nturtle.detect()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -185,7 +187,7 @@ export default class turtle{
     */
     async detectUp(){
         this.ws.send(`func-Any\nturtle.detectUp()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -193,7 +195,7 @@ export default class turtle{
     */
     async detectDown(){
         this.ws.send(`func-Any\nturtle.detectDown()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -201,7 +203,7 @@ export default class turtle{
     */
     async compareFront(){
         this.ws.send(`func-Any\nturtle.compare()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -209,7 +211,7 @@ export default class turtle{
     */
     async compareUp(){
         this.ws.send(`func-Any\nturtle.compareUp()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -217,7 +219,7 @@ export default class turtle{
     */
     async compareDown(){
         this.ws.send(`func-Any\nturtle.compareDown()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -225,7 +227,7 @@ export default class turtle{
     */
     async attackFront(side?:string){
         this.ws.send(`func-Any\nturtle.attack(${side})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -233,7 +235,7 @@ export default class turtle{
     */
     async attackUp(side?:string){
         this.ws.send(`func-Any\nturtle.attackUp(${side})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -241,7 +243,7 @@ export default class turtle{
     */
     async attackDown(side?:string){
         this.ws.send(`func-Any\nturtle.attackDown(${side})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -249,7 +251,7 @@ export default class turtle{
     */
     async suckFront(count?:number){
         this.ws.send(`func-Any\nturtle.suck(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -257,7 +259,7 @@ export default class turtle{
     */
     async suckUp(count?:number){
         this.ws.send(`func-Any\nturtle.suckUp(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -265,15 +267,15 @@ export default class turtle{
     */
     async suckDown(count?:number){
         this.ws.send(`func-Any\nturtle.suckDown(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /**
      * Get the amount of fuel this turtle currently holds
      */
-    async getFuelLevel(){
+    async getFuelLevel(): Promise<number>{
         this.ws.send("func-Any\nturtle.getFuelLevel()")
-        return await this.receive()
+        return +(await this.receive(50)).slice(1,-1)
     }
 
     /**
@@ -281,7 +283,7 @@ export default class turtle{
      */
     async refuel(count?:number){
         this.ws.send(`func-Any\nturtle.refuel(${count})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -289,7 +291,7 @@ export default class turtle{
     */
     async compareTo(slot:number){
         this.ws.send(`func-Any\nturtle.compareTo(${slot})`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -298,7 +300,7 @@ export default class turtle{
     async transferTo(slot:number, count?:string){
         if (count) {this.ws.send(`func-Any\nturtle.tranferTo(${slot}, ${count})`)}
         else {this.ws.send(`func-Any\nturtle.transferTo(${slot})`)}
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -306,7 +308,7 @@ export default class turtle{
     */
     async getSelectedSlot(){
         this.ws.send(`func-Any\nturtle.getSelectedSlot()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -314,7 +316,7 @@ export default class turtle{
     */
      async getFuelLimit(){
         this.ws.send(`func-Any\nturtle.getFuelLimit()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -322,7 +324,7 @@ export default class turtle{
     */
      async equipLeft(){
         this.ws.send(`func-Any\nturtle.equipLeft()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /** 
@@ -330,7 +332,7 @@ export default class turtle{
     */
     async equipRight(){
         this.ws.send(`func-Any\nturtle.equipRight()`)
-        return await this.receive()
+        return await this.receive(50)
     }
 
     /**
@@ -338,7 +340,7 @@ export default class turtle{
      */
     async inspect(){
         this.ws.send("func-Any\nturtle.inspect()")
-        return await this.receive()
+        return eval((await this.receive(50)).replace(/=/g,":"))
     }
 
     /**
@@ -346,7 +348,7 @@ export default class turtle{
      */
     async inspectUp(){
         this.ws.send("func-Any\nturtle.inspectUp()")
-        return await this.receive()
+        return eval((await this.receive(50)).replace(/=/g,":"))
     }
 
     /**
@@ -354,7 +356,7 @@ export default class turtle{
      */
     async inspectDown(){
         this.ws.send("func-Any\nturtle.inspectDown()")
-        return await this.receive()
+        return eval((await this.receive(50)).replace(/=/g,":"))
     }
 
     /** 
@@ -363,6 +365,19 @@ export default class turtle{
     async getItemDetail(slot?:number, detailed?:boolean){
         if (detailed) {this.ws.send(`func-Any\nturtle.tranferTo(${slot}, ${detailed})`)}
         else {this.ws.send(`func-Any\nturtle.transferTo(${slot})`)}
-        return await this.receive()
+        return await this.receive(50)
+    }
+
+
+
+    /**
+     *  Mine a specified amount of blocks forwards
+     */
+    async mine(distance:number){
+        if (await this.getFuelLevel() < distance) {throw new Error("Not enough fuel")}
+        else {
+            this.ws.send(`func-Any\nturtle.mine(${distance})`)
+            return (await this.receive(50*distance)).slice(1,-1)
+        }
     }
 }

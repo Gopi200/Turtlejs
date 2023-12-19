@@ -18,6 +18,18 @@ const ws_1 = require("ws");
 const turtle_1 = __importDefault(require("./turtle"));
 const fs_1 = __importDefault(require("fs"));
 const slurs = ["Asshole", "Baboon", "Chinky", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"];
+try {
+    fs_1.default.mkdirSync("./data");
+}
+catch (_a) { }
+try {
+    fs_1.default.writeFileSync("./data/turtles.json", "{}", { flag: 'wx' }, (err) => {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
+catch (_b) { }
 class TurtleServer {
     add_connection(label, turt) {
         this.connections[label] = turt;

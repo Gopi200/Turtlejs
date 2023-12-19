@@ -4,16 +4,23 @@ import fs from "fs"
 
 const slurs = ["Asshole", "Baboon", "Chinky", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
 
+try {fs.mkdirSync("./data")} catch {}
+try {fs.writeFileSync("./data/turtles.json", "{}", { flag: 'wx' },  (err:Error) => {
+  if (err) {
+    console.log(err)
+  }
+});} catch {}
+
 export default class TurtleServer{
   private wss:typeof WebSocketServer;
   connections;
-  savedconn;
+  savedconn:{[k:string]:turtle}={}
 
   private add_connection(label:string,turt:turtle){
     this.connections[label] = turt
     const { ws, ...turtn } = this.connections[label]
     this.savedconn[label] = turtn
-    fs.writeFile("./data/turtles.json", JSON.stringify(this.savedconn), (err) => {
+    fs.writeFile("./data/turtles.json", JSON.stringify(this.savedconn), (err:Error) => {
       if (err) {
         console.log(err)
       }
@@ -21,7 +28,7 @@ export default class TurtleServer{
     return label
   }
 
-  private message(data, ws) {
+  private message(data:String, ws:typeof WebSocketServer) {
     let datal = data.toString().split("\n")
       console.log(datal)
       switch (datal[0]) {
