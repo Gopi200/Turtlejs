@@ -10,9 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 class turtle {
-    constructor(ws) {
+    constructor(ws, location) {
         this.returned = "";
+        this.x = 0;
+        this.y = 0;
+        this.z = 0;
+        this.facing = "North";
         this.waitingit = 0;
+        if (location) {
+            this.x = location[0];
+            this.y = location[1];
+            this.z = location[2];
+            this.facing = location[3];
+        }
         this.ws = ws;
     }
     receive(timeout_iteration) {
@@ -443,13 +453,9 @@ class turtle {
      */
     mine(distance) {
         return __awaiter(this, void 0, void 0, function* () {
-            if ((yield this.getFuelLevel()) < distance) {
-                throw new Error("Not enough fuel");
-            }
-            else {
-                this.ws.send(`func-Any\nturtle.mine(${distance})`);
-                return (yield this.receive(50 * distance)).slice(1, -1);
-            }
+            // TODO make it work with undefined distance
+            this.ws.send(`func-Any\nturtle.mine(${distance})`);
+            return (yield this.receive(100)).slice(1, -1);
         });
     }
 }

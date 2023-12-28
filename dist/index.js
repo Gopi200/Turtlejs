@@ -47,7 +47,12 @@ class TurtleServer {
         console.log(datal);
         switch (datal[0]) {
             case "No label":
-                ws.send(`func-None\nos.setComputerLabel(\"${this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length / slurs.length), new turtle_1.default(ws))}\")`);
+                ws.send(this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length / slurs.length), new turtle_1.default(ws, datal[1].split(" ").map(function (val, i) { if (i < 3) {
+                    return +val;
+                }
+                else {
+                    return val;
+                } }))));
                 break;
             case "label":
                 this.connections[datal[1]].ws = ws;
@@ -77,3 +82,5 @@ class TurtleServer {
     }
 }
 exports.default = TurtleServer;
+const server = new TurtleServer(25565);
+// setTimeout(async ()=> console.log(await server.connections.Geezer0.turnLeft()), 10000)

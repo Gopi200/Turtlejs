@@ -1,5 +1,31 @@
-if shell.getRunningProgram() == "disk/startup.lua" then
-  shell.run("cp /disk/startup.lua /startup.lua")
+data = {saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
+
+function data.init()
+  local datastring = fs.open("data.txt", "rb").readAll()
+  local it = 0
+  for s in datastring:gmatch("[^\n]+") do
+    it = it+1
+    if data.datamap[2][data.datamap[1][it]] == "string" then data.saveddata[data.datamap[1][it]] = s
+    elseif data.datamap[2][data.datamap[1][it]] == "number" then data.saveddata[data.datamap[1][it]] = tonumber(s) end
+  end
+end
+
+function data.update(key, val)
+  data.saveddata[key] = val
+  local datastring = ""
+  for _, key in ipairs(data.datamap[1]) do
+    datastring = datastring .. data.saveddata[key] .. "\n"
+  end
+  fs.open("data.txt", "wb").write(datastring:sub(1,-2))
+end
+
+function awaitconnect()
+  ws = false
+  while ws == false do
+    ws = http.websocket(data.saveddata.URL)
+  end
+  ws.send("label\n" .. os.getComputerLabel())
+  return ws
 end
 
 function table.val_to_str ( v )
@@ -56,34 +82,58 @@ function mine(amount)
   end
   return "Finished mining"
 end
-  
 
-local myURL = "ws://84.105.39.48:25565"
-local ws = http.websocket(myURL)
-if pcall(function() ws.send("label\n" .. os.getComputerLabel()) end) then
-else ws.send("No label") end
-local event, url, message
+if not fs.exists("startup.lua") then
+  shell.run("set motd.enable false")
+  fs.copy("disk/startup.lua", "startup.lua")
+  if not fs.exists("disk/data.txt") then
+    wfile = fs.open("disk/data.txt","wb")
+    print("What is the WebSocket URL?")
+    wfile.write(io.stdin:read() .. "\n")
+    print("What is my x coordinate?")
+    wfile.write(io.stdin:read() .. "\n")
+    print("What is my y coordinate?")
+    wfile.write(io.stdin:read() .. "\n")
+    print("What is my z coordinate?")
+    wfile.write(io.stdin:read() .. "\n")
+    print("Which direction am I facing?")
+    wfile.write(io.stdin:read())
+  end
+  fs.copy("disk/data.txt", "data.txt")
+  rfile = fs.open("data.txt", "rb")
+  URL = rfile.readLine()
+  ws = false
+  while ws == false do
+    ws = http.websocket(URL)
+  end
+  ws.send("No label\n" .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine())
+  os.setComputerLabel(ws.receive())
+  os.reboot()
+end
+
+data.init()
+ws = awaitconnect()
 while true do
-    repeat
-        event, url, message = os.pullEvent("websocket_message")
-    until url == myURL
-    lines = {}
+  local message = ws.receive()
+  if message == nil then
+    ws = awaitconnect()
+  else
+    local lines = {}
     for s in message:gmatch("[^\n]+") do
         table.insert(lines, s)
     end
     if lines[1] == "func-Any" then
-        local func, err = load("return " .. tostring(lines[2]))
-        if err then
-            print("Command Error: " .. err)
-        elseif func then
-            t=table.tostring({func()})
-            ws.send(os.getComputerLabel() .. "\n" .. t)
-        end
-    else if lines[1] == "func-None" then
-        local func, err = load(tostring(lines[2]))
-        if err then print("Command Error: " .. err)
-        elseif func then func() end
+      local func, err = load("return " .. tostring(lines[2]))
+      if err then
+          print("Command Error: " .. err)
+      elseif func then
+          t=table.tostring({func()})
+          ws.send(os.getComputerLabel() .. "\n" .. t)
+      end
+    elseif lines[1] == "func-None" then
+      local func, err = load(tostring(lines[2]))
+      if err then print("Command Error: " .. err)
+      elseif func then func() end
     end
-    end
-    url = ""
+  end
 end

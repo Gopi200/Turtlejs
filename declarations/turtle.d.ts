@@ -1,8 +1,13 @@
+type direction = "North" | "East" | "South" | "West";
 export default class turtle {
     ws: WebSocket;
     returned: string;
+    x: number;
+    y: number;
+    z: number;
+    facing: direction;
     private waitingit;
-    constructor(ws: WebSocket);
+    constructor(ws: WebSocket, location?: [number, number, number, direction]);
     private receive;
     /**
      * 	Craft a recipe based on the turtle's inventory. The turtle cannot contain any items other than the ones involved in the recipe.
@@ -182,5 +187,6 @@ export default class turtle {
     /**
      *  Mine a specified amount of blocks forwards
      */
-    mine(distance: number): Promise<string>;
+    mine(distance?: number): Promise<string>;
 }
+export {};

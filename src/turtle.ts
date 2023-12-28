@@ -1,8 +1,21 @@
-export default class turtle{
+const direction = ["North","East","South","West"] as const
+export type Direction = typeof direction[number]
+
+export class turtle{
     ws:WebSocket
     returned = ""
+    x=0
+    y=0
+    z=0
+    facing:Direction="North"
     private waitingit = 0
-    constructor(ws:WebSocket){
+    constructor(ws:WebSocket, location?:[number, number, number, Direction]){
+        if(location){
+            this.x = location[0]
+            this.y = location[1]
+            this.z = location[2]
+            this.facing = location[3]
+        }
         this.ws = ws
     }
 
@@ -32,7 +45,28 @@ export default class turtle{
     */
     async moveForward(){
         this.ws.send("func-Any\nturtle.forward()")
-        return await this.receive(50)
+        switch (await this.receive(50)){
+            case "[true]":
+                switch (this.facing) {
+                    case "North":
+                        this.z-=1
+                        break;
+                    case "East":
+                        this.x+=1
+                        break;
+                    case "South":
+                        this.z+=1
+                        break;
+                    case "West":
+                        this.x-=1
+                        break;
+                }
+                return true
+            case "[false]": //doesn't account for error message
+                return false
+            default:
+                throw new Error("No response")
+        }
     }
 
     /** 
@@ -40,7 +74,28 @@ export default class turtle{
     */
     async moveBackward(){
         this.ws.send("func-Any\nturtle.back()")
-        return await this.receive(50)
+        switch (await this.receive(50)){
+            case "[true]":
+                switch (this.facing) {
+                    case "North":
+                        this.z+=1
+                        break;
+                    case "East":
+                        this.x-=1
+                        break;
+                    case "South":
+                        this.z-=1
+                        break;
+                    case "West":
+                        this.x+=1
+                        break;
+                }
+                return true
+            case "[false]": //doesn't account for error message
+                return false
+            default:
+                throw new Error("No response")
+        }
     }
 
     /** 
@@ -48,7 +103,15 @@ export default class turtle{
     */
     async moveUp(){
         this.ws.send("func-Any\nturtle.up()")
-        return await this.receive(50)
+        switch (await this.receive(50)){
+            case "[true]":
+                this.y+=1
+                return true
+            case "[false]": //doesn't account for error message
+                return false
+            default:
+                throw new Error("No response")
+        }
     }
 
     /** 
@@ -56,7 +119,15 @@ export default class turtle{
     */
     async moveDown(){
         this.ws.send("func-Any\nturtle.down()")
-        return await this.receive(50)
+        switch (await this.receive(50)){
+            case "[true]":
+                this.y-=1
+                return true
+            case "[false]": //doesn't account for error message
+                return false
+            default:
+                throw new Error("No response")
+        }
     }
 
     /** 
@@ -64,7 +135,15 @@ export default class turtle{
     */
     async turnLeft(){
         this.ws.send("func-Any\nturtle.turnLeft()")
-        return await this.receive(50)
+        switch (await this.receive(50)) {
+            case "[true]":
+                this.facing = direction[direction.indexOf(this.facing)-1]
+                return true;
+            case "[false]": //doesn't account for error message
+                return false
+            default:
+                throw new Error("No response")
+        }
     }
 
     /** 
@@ -72,7 +151,15 @@ export default class turtle{
     */
     async turnRight(){
         this.ws.send("func-Any\nturtle.turnRight()")
-        return await this.receive(50)
+        switch (await this.receive(50)) {
+            case "[true]":
+                this.facing = direction[direction.indexOf(this.facing)+1]
+                return true;
+            case "[false]": //doesn't account for error message
+                return false
+            default:
+                throw new Error("No response")
+        }
     }
 
     /** 
@@ -373,11 +460,9 @@ export default class turtle{
     /**
      *  Mine a specified amount of blocks forwards
      */
-    async mine(distance:number){
-        if (await this.getFuelLevel() < distance) {throw new Error("Not enough fuel")}
-        else {
-            this.ws.send(`func-Any\nturtle.mine(${distance})`)
-            return (await this.receive(50*distance)).slice(1,-1)
-        }
+    async mine(distance?:number){
+        // TODO make it work with undefined distance
+        this.ws.send(`func-Any\nturtle.mine(${distance})`)
+        return (await this.receive(100)).slice(1,-1)
     }
 }

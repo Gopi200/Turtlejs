@@ -1,5 +1,5 @@
 import {WebSocketServer} from "ws"
-import turtle from "./turtle"
+import {Direction, turtle} from "./turtle"
 import fs from "fs"
 
 const slurs = ["Asshole", "Baboon", "Chinky", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
@@ -33,7 +33,7 @@ export default class TurtleServer{
       console.log(datal)
       switch (datal[0]) {
         case "No label":
-          ws.send(`func-None\nos.setComputerLabel(\"${this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length/slurs.length), new turtle(ws))}\")`)
+          ws.send(this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length/slurs.length), new turtle(ws, (datal[1].split(" ").map(function(val, i){if (i<3){return +val} else{return val as Direction}}) as [number,number,number,Direction]))))
           break;
         case "label":
           this.connections[datal[1]].ws = ws
@@ -60,5 +60,5 @@ export default class TurtleServer{
     }
 
     this.wss.on('connection', (ws:typeof WebSocketServer)=>this.connection(ws))
-  }
+  } 
 }
