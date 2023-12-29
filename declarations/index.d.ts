@@ -1,4 +1,5 @@
-import turtle from "./turtle";
+import { turtle } from "./turtle";
+export * from "./defaults";
 export default class TurtleServer {
     private wss;
     connections: any;

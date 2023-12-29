@@ -1,14 +1,16 @@
-type direction = "North" | "East" | "South" | "West";
-export default class turtle {
+declare const direction: readonly ["North", "East", "South", "West"];
+export type Direction = typeof direction[number];
+export declare class turtle {
     ws: WebSocket;
-    returned: string;
+    returned: string[];
+    status: string;
     x: number;
     y: number;
     z: number;
-    facing: direction;
+    facing: Direction;
     private waitingit;
-    constructor(ws: WebSocket, location?: [number, number, number, direction]);
-    private receive;
+    constructor(ws: WebSocket, location?: [number, number, number, Direction]);
+    receive(timeout_iteration?: number): Promise<string>;
     /**
      * 	Craft a recipe based on the turtle's inventory. The turtle cannot contain any items other than the ones involved in the recipe.
     */
@@ -16,27 +18,27 @@ export default class turtle {
     /**
      * 	Move the turtle forward one block.
     */
-    moveForward(): Promise<string>;
+    moveForward(): Promise<boolean>;
     /**
      * 	Move the turtle back one block.
     */
-    moveBackward(): Promise<string>;
+    moveBackward(): Promise<boolean>;
     /**
      * 	Move the turtle up one block.
     */
-    moveUp(): Promise<string>;
+    moveUp(): Promise<boolean>;
     /**
      * 	Move the turtle down one block.
     */
-    moveDown(): Promise<string>;
+    moveDown(): Promise<boolean>;
     /**
      * 	Rotate the turtle to the left by 90 degrees.
     */
-    turnLeft(): Promise<string>;
+    turnLeft(): Promise<boolean>;
     /**
      * 	Rotate the turtle to the right by 90 degrees.
     */
-    turnRight(): Promise<string>;
+    turnRight(): Promise<boolean>;
     /**
      *  Break the block in front of the turtle.
     */
@@ -171,7 +173,7 @@ export default class turtle {
     /**
      * 	Get information about the block in front of the turtle.
      */
-    inspect(): Promise<any>;
+    inspectForward(): Promise<any>;
     /**
      * 	Get information about the block above the turtle.
      */
@@ -184,9 +186,5 @@ export default class turtle {
      * 	Get detailed information about the items in the given slot. Boolean detailed gives even more info in exchange for taking longer to run.
     */
     getItemDetail(slot?: number, detailed?: boolean): Promise<string>;
-    /**
-     *  Mine a specified amount of blocks forwards
-     */
-    mine(distance?: number): Promise<string>;
 }
 export {};

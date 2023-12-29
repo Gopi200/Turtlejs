@@ -1,8 +1,9 @@
 import {WebSocketServer} from "ws"
 import {Direction, turtle} from "./turtle"
+export * from "./defaults"
 import fs from "fs"
 
-const slurs = ["Asshole", "Baboon", "Chinky", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
+const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
 
 try {fs.mkdirSync("./data")} catch {}
 try {fs.writeFileSync("./data/turtles.json", "{}", { flag: 'wx' },  (err:Error) => {
@@ -38,8 +39,11 @@ export default class TurtleServer{
         case "label":
           this.connections[datal[1]].ws = ws
           break
+        case "status":
+          this.connections[datal[1]].status = datal[2]
+          break
         default:
-          this.connections[datal[0]].returned = datal[1]
+          this.connections[datal[0]].returned.push(datal[1])
           break;
     }
   }
@@ -51,7 +55,7 @@ export default class TurtleServer{
   constructor(port: number){
     this.wss = new WebSocketServer({ port });
 
-    try {this.connections = JSON.parse(fs.readFileSync("./data/turtles.json", "utf-8"), (key, value)=>{Object.setPrototypeOf(value, turtle.prototype); return value})}
+    try {this.connections = JSON.parse(fs.readFileSync("./data/turtles.json", "utf-8"), (key, value)=>{if (key != "returned") {Object.setPrototypeOf(value, turtle.prototype)}; return value})}
     catch(err) {console.error(err)}
     
     for (const key of Object.keys(this.connections)){

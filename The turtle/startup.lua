@@ -1,32 +1,25 @@
-data = {saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
+_G.data = {saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
 
-function data.init()
+function _G.data.init()
   local datastring = fs.open("data.txt", "rb").readAll()
   local it = 0
   for s in datastring:gmatch("[^\n]+") do
     it = it+1
-    if data.datamap[2][data.datamap[1][it]] == "string" then data.saveddata[data.datamap[1][it]] = s
-    elseif data.datamap[2][data.datamap[1][it]] == "number" then data.saveddata[data.datamap[1][it]] = tonumber(s) end
+    if _G.data.datamap[2][_G.data.datamap[1][it]] == "string" then _G.data.saveddata[_G.data.datamap[1][it]] = s
+    elseif _G.data.datamap[2][_G.data.datamap[1][it]] == "number" then _G.data.saveddata[_G.data.datamap[1][it]] = tonumber(s) end
   end
 end
 
-function data.update(key, val)
-  data.saveddata[key] = val
+function _G.data.update(key, val)
+  _G.data.saveddata[key] = val
   local datastring = ""
-  for _, key in ipairs(data.datamap[1]) do
-    datastring = datastring .. data.saveddata[key] .. "\n"
+  for _, key in ipairs(_G.data.datamap[1]) do
+    datastring = datastring .. _G.data.saveddata[key] .. "\n"
   end
   fs.open("data.txt", "wb").write(datastring:sub(1,-2))
 end
 
-function awaitconnect()
-  ws = false
-  while ws == false do
-    ws = http.websocket(data.saveddata.URL)
-  end
-  ws.send("label\n" .. os.getComputerLabel())
-  return ws
-end
+
 
 function table.val_to_str ( v )
   if "string" == type( v ) then
@@ -64,24 +57,80 @@ function table.tostring( tbl )
   return "{" .. table.concat( result, "," ) .. "}"
 end
 
-function testore(blockdata)
-  assert(type(blockdata[2]["tags"]) == "table", "No block", 2)
-  if blockdata[2]["tags"]["forge:ores"] then return true
-  else error("No ore") end
+
+
+local originalfwd = turtle.forward
+function turtle.forward()
+  local succ, err = originalfwd()
+  if succ then
+    local tab = {North=function() _G.data.update("z", _G.data.saveddata.z - 1) end, East=function() _G.data.update("x", _G.data.saveddata.x + 1) end, South=function() _G.data.update("z", _G.data.saveddata.z + 1) end, West=function() _G.data.update("x", _G.data.saveddata.x - 1) end}
+    tab[_G.data.saveddata.facing]()
+  end
+  return succ, err
 end
 
-function mine(amount)
-  for mineit= 1,amount do
-    turtle.turnLeft()
-    if pcall(testore,{turtle.inspectUp()}) then turtle.digUp() end
-    if pcall(testore,{turtle.inspectDown()}) then turtle.digDown() end
-    if pcall(testore,{turtle.inspect()}) then turtle.dig() end
-    turtle.turnRight(); turtle.turnRight()
-    if pcall(testore,{turtle.inspect()}) then turtle.dig() end
-    turtle.turnLeft(); turtle.dig(); turtle.forward()
+local originalback = turtle.back
+function turtle.back()
+  local succ, err = originalback()
+  if succ then
+    local tab = {North=function() _G.data.update("z", _G.data.saveddata.z + 1) end, East=function() _G.data.update("x", _G.data.saveddata.x - 1) end, South=function() _G.data.update("z", _G.data.saveddata.z - 1) end, West=function() _G.data.update("x", _G.data.saveddata.x + 1) end}
+    tab[_G.data.saveddata.facing]()
   end
-  return "Finished mining"
+  return succ, err
 end
+
+local originalup = turtle.up
+function turtle.up()
+  local succ, err = originalup()
+  if succ then
+    _G.data.update("y", _G.data.saveddata.y + 1)
+  end
+  return succ, err
+end
+
+local originaldown = turtle.down
+function turtle.down()
+  local succ, err = originaldown()
+  if succ then
+    _G.data.update("y", _G.data.saveddata.y - 1)
+  end
+  return succ, err
+end
+
+local originalturnleft = turtle.turnLeft
+function turtle.turnLeft()
+  local succ, err = originalturnleft()
+  if succ then
+    local tab = {North=function() _G.data.update("facing", "West") end, East=function() _G.data.update("facing", "North") end, South=function() _G.data.update("facing", "East") end, function() West=_G.data.update("facing", "South") end}
+    tab[_G.data.saveddata.facing]()
+  end
+  return succ, err
+end
+
+local originalturnright = turtle.turnRight
+function turtle.turnRight()
+  local succ, err = originalturnright()
+  if succ then
+    local tab = {North=function() _G.data.update("facing", "East") end, East=function() _G.data.update("facing", "South") end, South=function() _G.data.update("facing", "West") end, West=function() _G.data.update("facing", "North") end}
+    tab[_G.data.saveddata.facing]()
+  end
+  return succ, err
+end
+
+
+
+function awaitconnect()
+  ws = false
+  while ws == false do
+    ws = http.websocket(_G.data.saveddata.URL)
+  end
+  ws.send("label\n" .. os.getComputerLabel())
+  return ws
+end
+
+
+
+
 
 if not fs.exists("startup.lua") then
   shell.run("set motd.enable false")
@@ -111,29 +160,21 @@ if not fs.exists("startup.lua") then
   os.reboot()
 end
 
-data.init()
-ws = awaitconnect()
+
+
+_G.data.init()
+_G.ws = awaitconnect()
 while true do
-  local message = ws.receive()
+  local message = _G.ws.receive()
   if message == nil then
-    ws = awaitconnect()
+    _G.ws = awaitconnect()
   else
-    local lines = {}
-    for s in message:gmatch("[^\n]+") do
-        table.insert(lines, s)
-    end
-    if lines[1] == "func-Any" then
-      local func, err = load("return " .. tostring(lines[2]))
-      if err then
-          print("Command Error: " .. err)
-      elseif func then
-          t=table.tostring({func()})
-          ws.send(os.getComputerLabel() .. "\n" .. t)
-      end
-    elseif lines[1] == "func-None" then
-      local func, err = load(tostring(lines[2]))
-      if err then print("Command Error: " .. err)
-      elseif func then func() end
+    local func, err = load(message)
+    if err then
+      _G.ws.send("status\n" .. os.getComputerLabel() .. "\nCompilation error: " .. err)
+    elseif func then
+      local status = pcall(func)
+      _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring(status))
     end
   end
 end

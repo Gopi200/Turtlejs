@@ -9,9 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.turtle = void 0;
+const defaults_1 = require("./defaults");
+const direction = ["North", "East", "South", "West"];
 class turtle {
     constructor(ws, location) {
-        this.returned = "";
+        this.returned = [];
+        this.status = "";
         this.x = 0;
         this.y = 0;
         this.z = 0;
@@ -28,7 +32,8 @@ class turtle {
     receive(timeout_iteration) {
         return __awaiter(this, void 0, void 0, function* () {
             var timed_out = false;
-            while (this.returned == "") {
+            console.log(this.returned);
+            while (this.returned.length == 0) {
                 if (timeout_iteration) {
                     if (this.waitingit > timeout_iteration) {
                         timed_out = true;
@@ -38,12 +43,14 @@ class turtle {
                 yield new Promise(resolve => setTimeout(resolve, 100));
                 this.waitingit += 1;
             }
+            var temp = "";
+            this.waitingit = 0;
             if (timed_out) {
-                return "Nothing";
+                return "Timed out";
             }
             else {
-                var temp = `[${this.returned.slice(1, -1)}]`;
-                this.returned = "";
+                temp = `[${this.returned[0].slice(1, -1)}]`;
+                this.returned.shift();
                 return temp;
             }
         });
@@ -53,7 +60,7 @@ class turtle {
     */
     craft(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.craft(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.craft(${count})`));
             return yield this.receive(50);
         });
     }
@@ -62,8 +69,29 @@ class turtle {
     */
     moveForward() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.forward()");
-            return yield this.receive(50);
+            this.ws.send((0, defaults_1.sendresponse)("turtle.forward()"));
+            switch (yield this.receive(50)) {
+                case "[true]":
+                    switch (this.facing) {
+                        case "North":
+                            this.z -= 1;
+                            break;
+                        case "East":
+                            this.x += 1;
+                            break;
+                        case "South":
+                            this.z += 1;
+                            break;
+                        case "West":
+                            this.x -= 1;
+                            break;
+                    }
+                    return true;
+                case "[false]": //doesn't account for error message
+                    return false;
+                default:
+                    throw new Error("No response");
+            }
         });
     }
     /**
@@ -71,8 +99,29 @@ class turtle {
     */
     moveBackward() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.back()");
-            return yield this.receive(50);
+            this.ws.send((0, defaults_1.sendresponse)("turtle.back()"));
+            switch (yield this.receive(50)) {
+                case "[true]":
+                    switch (this.facing) {
+                        case "North":
+                            this.z += 1;
+                            break;
+                        case "East":
+                            this.x -= 1;
+                            break;
+                        case "South":
+                            this.z -= 1;
+                            break;
+                        case "West":
+                            this.x += 1;
+                            break;
+                    }
+                    return true;
+                case "[false]": //doesn't account for error message
+                    return false;
+                default:
+                    throw new Error("No response");
+            }
         });
     }
     /**
@@ -80,8 +129,16 @@ class turtle {
     */
     moveUp() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.up()");
-            return yield this.receive(50);
+            this.ws.send((0, defaults_1.sendresponse)("turtle.up()"));
+            switch (yield this.receive(50)) {
+                case "[true]":
+                    this.y += 1;
+                    return true;
+                case "[false]": //doesn't account for error message
+                    return false;
+                default:
+                    throw new Error("No response");
+            }
         });
     }
     /**
@@ -89,8 +146,16 @@ class turtle {
     */
     moveDown() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.down()");
-            return yield this.receive(50);
+            this.ws.send((0, defaults_1.sendresponse)("turtle.down()"));
+            switch (yield this.receive(50)) {
+                case "[true]":
+                    this.y -= 1;
+                    return true;
+                case "[false]": //doesn't account for error message
+                    return false;
+                default:
+                    throw new Error("No response");
+            }
         });
     }
     /**
@@ -98,8 +163,16 @@ class turtle {
     */
     turnLeft() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.turnLeft()");
-            return yield this.receive(50);
+            this.ws.send((0, defaults_1.sendresponse)("turtle.turnLeft()"));
+            switch (yield this.receive(50)) {
+                case "[true]":
+                    this.facing = direction[direction.indexOf(this.facing) - 1];
+                    return true;
+                case "[false]": //doesn't account for error message
+                    return false;
+                default:
+                    throw new Error("No response");
+            }
         });
     }
     /**
@@ -107,8 +180,16 @@ class turtle {
     */
     turnRight() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.turnRight()");
-            return yield this.receive(50);
+            this.ws.send((0, defaults_1.sendresponse)("turtle.turnRight()"));
+            switch (yield this.receive(50)) {
+                case "[true]":
+                    this.facing = direction[direction.indexOf(this.facing) + 1];
+                    return true;
+                case "[false]": //doesn't account for error message
+                    return false;
+                default:
+                    throw new Error("No response");
+            }
         });
     }
     /**
@@ -116,7 +197,7 @@ class turtle {
     */
     digFront(side) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.dig(${side})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.dig(${side})`));
             return yield this.receive(50);
         });
     }
@@ -125,7 +206,7 @@ class turtle {
     */
     digUp(side) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.digUp(${side})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.digUp(${side})`));
             return yield this.receive(50);
         });
     }
@@ -134,7 +215,7 @@ class turtle {
     */
     digDown(side) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.digDown(${side})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.digDown(${side})`));
             return yield this.receive(50);
         });
     }
@@ -144,7 +225,7 @@ class turtle {
     */
     placeFront(text) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.place(${text})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.place(${text})`));
             return yield this.receive(50);
         });
     }
@@ -154,7 +235,7 @@ class turtle {
     */
     placeUp(text) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.placeUp(${text})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.placeUp(${text})`));
             return yield this.receive(50);
         });
     }
@@ -164,7 +245,7 @@ class turtle {
     */
     placeDown(text) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.placeDown(${text})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.placeDown(${text})`));
             return yield this.receive(50);
         });
     }
@@ -173,7 +254,7 @@ class turtle {
     */
     dropFront(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.drop(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.drop(${count})`));
             return yield this.receive(50);
         });
     }
@@ -182,7 +263,7 @@ class turtle {
     */
     dropUp(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.dropUp(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.dropUp(${count})`));
             return yield this.receive(50);
         });
     }
@@ -191,7 +272,7 @@ class turtle {
     */
     dropDown(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.dropDown(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.dropDown(${count})`));
             return yield this.receive(50);
         });
     }
@@ -200,7 +281,7 @@ class turtle {
     */
     select(slot) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.select(${slot})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.select(${slot})`));
             return yield this.receive(50);
         });
     }
@@ -209,7 +290,7 @@ class turtle {
     */
     getItemCount(slot) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.getItemCount(${slot})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.getItemCount(${slot})`));
             return yield this.receive(50);
         });
     }
@@ -218,7 +299,7 @@ class turtle {
     */
     getItemSpace(slot) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.getItemCount(${slot})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.getItemSpace(${slot})`));
             return yield this.receive(50);
         });
     }
@@ -227,7 +308,7 @@ class turtle {
     */
     detectFront() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.detect()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.detect()`));
             return yield this.receive(50);
         });
     }
@@ -236,7 +317,7 @@ class turtle {
     */
     detectUp() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.detectUp()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.detectUp()`));
             return yield this.receive(50);
         });
     }
@@ -245,7 +326,7 @@ class turtle {
     */
     detectDown() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.detectDown()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.detectDown()`));
             return yield this.receive(50);
         });
     }
@@ -254,7 +335,7 @@ class turtle {
     */
     compareFront() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.compare()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.compare()`));
             return yield this.receive(50);
         });
     }
@@ -263,7 +344,7 @@ class turtle {
     */
     compareUp() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.compareUp()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.compareUp()`));
             return yield this.receive(50);
         });
     }
@@ -272,7 +353,7 @@ class turtle {
     */
     compareDown() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.compareDown()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.compareDown()`));
             return yield this.receive(50);
         });
     }
@@ -281,7 +362,7 @@ class turtle {
     */
     attackFront(side) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.attack(${side})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.attack(${side})`));
             return yield this.receive(50);
         });
     }
@@ -290,7 +371,7 @@ class turtle {
     */
     attackUp(side) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.attackUp(${side})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.attackUp(${side})`));
             return yield this.receive(50);
         });
     }
@@ -299,7 +380,7 @@ class turtle {
     */
     attackDown(side) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.attackDown(${side})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.attackDown(${side})`));
             return yield this.receive(50);
         });
     }
@@ -308,7 +389,7 @@ class turtle {
     */
     suckFront(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.suck(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.suck(${count})`));
             return yield this.receive(50);
         });
     }
@@ -317,7 +398,7 @@ class turtle {
     */
     suckUp(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.suckUp(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.suckUp(${count})`));
             return yield this.receive(50);
         });
     }
@@ -326,7 +407,7 @@ class turtle {
     */
     suckDown(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.suckDown(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.suckDown(${count})`));
             return yield this.receive(50);
         });
     }
@@ -335,7 +416,7 @@ class turtle {
      */
     getFuelLevel() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.getFuelLevel()");
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.getFuelLevel()`));
             return +(yield this.receive(50)).slice(1, -1);
         });
     }
@@ -344,7 +425,7 @@ class turtle {
      */
     refuel(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.refuel(${count})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.refuel(${count})`));
             return yield this.receive(50);
         });
     }
@@ -353,7 +434,7 @@ class turtle {
     */
     compareTo(slot) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.compareTo(${slot})`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.compareTo(${slot})`));
             return yield this.receive(50);
         });
     }
@@ -363,10 +444,10 @@ class turtle {
     transferTo(slot, count) {
         return __awaiter(this, void 0, void 0, function* () {
             if (count) {
-                this.ws.send(`func-Any\nturtle.tranferTo(${slot}, ${count})`);
+                this.ws.send((0, defaults_1.sendresponse)(`turtle.transferTo(${slot}, ${count})`));
             }
             else {
-                this.ws.send(`func-Any\nturtle.transferTo(${slot})`);
+                this.ws.send((0, defaults_1.sendresponse)(`turtle.transferTo(${slot})`));
             }
             return yield this.receive(50);
         });
@@ -376,7 +457,7 @@ class turtle {
     */
     getSelectedSlot() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.getSelectedSlot()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.getSelectedSlot()`));
             return yield this.receive(50);
         });
     }
@@ -385,7 +466,7 @@ class turtle {
     */
     getFuelLimit() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.getFuelLimit()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.getFuelLimit()`));
             return yield this.receive(50);
         });
     }
@@ -394,7 +475,7 @@ class turtle {
     */
     equipLeft() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.equipLeft()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.equipLeft()`));
             return yield this.receive(50);
         });
     }
@@ -403,16 +484,16 @@ class turtle {
     */
     equipRight() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send(`func-Any\nturtle.equipRight()`);
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.equipRight()`));
             return yield this.receive(50);
         });
     }
     /**
      * 	Get information about the block in front of the turtle.
      */
-    inspect() {
+    inspectForward() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.inspect()");
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.inspect()`));
             return eval((yield this.receive(50)).replace(/=/g, ":"));
         });
     }
@@ -421,7 +502,7 @@ class turtle {
      */
     inspectUp() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.inspectUp()");
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.inspectUp()`));
             return eval((yield this.receive(50)).replace(/=/g, ":"));
         });
     }
@@ -430,7 +511,7 @@ class turtle {
      */
     inspectDown() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.ws.send("func-Any\nturtle.inspectDown()");
+            this.ws.send((0, defaults_1.sendresponse)(`turtle.inspectDown()`));
             return eval((yield this.receive(50)).replace(/=/g, ":"));
         });
     }
@@ -440,23 +521,13 @@ class turtle {
     getItemDetail(slot, detailed) {
         return __awaiter(this, void 0, void 0, function* () {
             if (detailed) {
-                this.ws.send(`func-Any\nturtle.tranferTo(${slot}, ${detailed})`);
+                this.ws.send((0, defaults_1.sendresponse)(`turtle.getItemDetail(${slot}, ${detailed})`));
             }
             else {
-                this.ws.send(`func-Any\nturtle.transferTo(${slot})`);
+                this.ws.send((0, defaults_1.sendresponse)(`turtle.getItemDetail(${slot})`));
             }
             return yield this.receive(50);
         });
     }
-    /**
-     *  Mine a specified amount of blocks forwards
-     */
-    mine(distance) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // TODO make it work with undefined distance
-            this.ws.send(`func-Any\nturtle.mine(${distance})`);
-            return (yield this.receive(100)).slice(1, -1);
-        });
-    }
 }
-exports.default = turtle;
+exports.turtle = turtle;
