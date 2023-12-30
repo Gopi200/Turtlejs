@@ -52,9 +52,7 @@ const getInventory = function getInventory(turtle) {
     end
     ${sendresponse(`table.tostring(inv):sub(2,-2)`)}
     `);
-        var returned = JSON.parse(`[${(yield turtle.receive()).replace(/name=/g, `"name":`).replace(/count=/g, `"count":`)}]`).map((val) => Object.keys(val).map((nestval) => val[nestval]));
-        console.log(returned);
-        return returned;
+        return JSON.parse(`[${(yield turtle.receive()).replace(/name=/g, `"name":`).replace(/count=/g, `"count":`)}]`).map((val) => Object.keys(val).map((nestval) => val[nestval]));
     });
 };
 exports.getInventory = getInventory;

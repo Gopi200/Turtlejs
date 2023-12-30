@@ -1,6 +1,6 @@
 shell.run("set motd.enable false")
-shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/json.lua", "disk/json.lua")
-shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/startup.lua", "disk/startup.lua")
+shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/json.lua", "/disk/json.lua")
+shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/startup.lua", "/disk/startup.lua")
 wfile = fs.open("disk/data.txt","wb")
 print("What is the WebSocket URL?")
 wfile.write(io.stdin:read() .. "\n")
