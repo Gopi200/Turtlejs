@@ -38,7 +38,7 @@ export const getInventory = async function getInventory(turtle:Turtle){
             table.insert(inv, {name="",count=0})
         end
     end
-    ${sendresponse(`table.tostring(inv):sub(2,-2)`)}
+    ${sendresponse(`json.encode(inv)`)}
     `);
     return (JSON.parse(`[${(await turtle.receive()).replace(/name=/g,`"name":`).replace(/count=/g,`"count":`)}]`) as {[string:string]:string|number}[]).map((val)=>Object.keys(val).map((nestval)=>val[nestval]))
 }

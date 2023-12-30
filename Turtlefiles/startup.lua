@@ -1,3 +1,5 @@
+json = require "json"
+
 _G.data = {saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
 
 function _G.data.init()
@@ -17,44 +19,6 @@ function _G.data.update(key, val)
     datastring = datastring .. _G.data.saveddata[key] .. "\n"
   end
   fs.open("data.txt", "wb").write(datastring:sub(1,-2))
-end
-
-
-
-function table.val_to_str ( v )
-  if "string" == type( v ) then
-    v = string.gsub( v, "\n", "\\n" )
-    if string.match( string.gsub(v,"[^'\"]",""), '^"+$' ) then
-      return "'" .. v .. "'"
-    end
-    return '"' .. string.gsub(v,'"', '\\"' ) .. '"'
-  else
-    return "table" == type( v ) and table.tostring( v ) or
-      tostring( v )
-  end
-end
-  
-function table.key_to_str ( k )
-  if "string" == type( k ) and string.match( k, "^[_%a][_%a%d]*$" ) then
-    return k
-  else
-    return "[" .. table.val_to_str( k ) .. "]"
-  end
-end
-  
-function table.tostring( tbl )
-  local result, done = {}, {}
-  for k, v in ipairs( tbl ) do
-    table.insert( result, table.val_to_str( v ) )
-    done[ k ] = true
-  end
-  for k, v in pairs( tbl ) do
-    if not done[ k ] then
-      table.insert( result,
-        table.key_to_str( k ) .. "=" .. table.val_to_str( v ) )
-    end
-  end
-  return "{" .. table.concat( result, "," ) .. "}"
 end
 
 
@@ -133,6 +97,7 @@ end
 
 
 if not fs.exists("startup.lua") then
+  fs.copy("disk/json.lua", "json.lua")
   fs.copy("disk/startup.lua", "startup.lua")
   fs.copy("disk/data.txt", "data.txt")
   rfile = fs.open("data.txt", "rb")

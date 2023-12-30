@@ -50,7 +50,7 @@ const getInventory = function getInventory(turtle) {
             table.insert(inv, {name="",count=0})
         end
     end
-    ${sendresponse(`table.tostring(inv):sub(2,-2)`)}
+    ${sendresponse(`json.encode(inv)`)}
     `);
         return JSON.parse(`[${(yield turtle.receive()).replace(/name=/g, `"name":`).replace(/count=/g, `"count":`)}]`).map((val) => Object.keys(val).map((nestval) => val[nestval]));
     });
