@@ -136,13 +136,15 @@ if not fs.exists("startup.lua") then
   fs.copy("disk/startup.lua", "startup.lua")
   fs.copy("disk/data.txt", "data.txt")
   rfile = fs.open("data.txt", "rb")
-  URL = rfile.readLine()
-  ws = false
-  while ws == false do
-    ws = http.websocket(URL)
+  if not os.getComputerLabel() then
+    URL = rfile.readLine()
+    ws = false
+    while ws == false do
+      ws = http.websocket(URL)
+    end
+    ws.send("No label\n" .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine())
+    os.setComputerLabel(ws.receive())
   end
-  ws.send("No label\n" .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine())
-  os.setComputerLabel(ws.receive())
   os.reboot()
 end
 

@@ -1,6 +1,9 @@
 if fs.exists("/disk/startup.lua") then
     fs.delete("/disk/startup.lua")
     fs.delete("/disk/json.lua")
+    fs.delete("startup.lua")
+    fs.delete("data.txt")
+    fs.delete("json.lua")
 else
     wfile = fs.open("disk/data.txt","wb")
     print("What is the WebSocket URL?")
