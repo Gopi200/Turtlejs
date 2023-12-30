@@ -1,6 +1,6 @@
-if fs.exists("/disk/startup.lua") then
-    fs.delete("/disk/startup.lua")
-    fs.delete("/disk/json.lua")
+if fs.exists("disk/startup.lua") then
+    fs.delete("disk/startup.lua")
+    fs.delete("disk/json.lua")
     fs.delete("startup.lua")
     fs.delete("data.txt")
     fs.delete("json.lua")
