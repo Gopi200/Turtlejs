@@ -133,21 +133,7 @@ end
 
 
 if not fs.exists("startup.lua") then
-  shell.run("set motd.enable false")
   fs.copy("disk/startup.lua", "startup.lua")
-  if not fs.exists("disk/data.txt") then
-    wfile = fs.open("disk/data.txt","wb")
-    print("What is the WebSocket URL?")
-    wfile.write(io.stdin:read() .. "\n")
-    print("What is my x coordinate?")
-    wfile.write(io.stdin:read() .. "\n")
-    print("What is my y coordinate?")
-    wfile.write(io.stdin:read() .. "\n")
-    print("What is my z coordinate?")
-    wfile.write(io.stdin:read() .. "\n")
-    print("Which direction am I facing?")
-    wfile.write(io.stdin:read())
-  end
   fs.copy("disk/data.txt", "data.txt")
   rfile = fs.open("data.txt", "rb")
   URL = rfile.readLine()
