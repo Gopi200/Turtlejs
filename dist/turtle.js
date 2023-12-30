@@ -9,10 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.turtle = void 0;
 const defaults_1 = require("./defaults");
 const direction = ["North", "East", "South", "West"];
-class turtle {
+class Turtle {
     constructor(ws, location) {
         this.returned = [];
         this.status = "";
@@ -20,6 +19,13 @@ class turtle {
         this.y = 0;
         this.z = 0;
         this.facing = "North";
+        this.inventory = [
+            [["", 0], ["", 0], ["", 0], ["", 0]],
+            [["", 0], ["", 0], ["", 0], ["", 0]],
+            [["", 0], ["", 0], ["", 0], ["", 0]],
+            [["", 0], ["", 0], ["", 0], ["", 0]]
+        ];
+        this.equipment = ["", ""];
         this.waitingit = 0;
         if (location) {
             this.x = location[0];
@@ -32,7 +38,6 @@ class turtle {
     receive(timeout_iteration) {
         return __awaiter(this, void 0, void 0, function* () {
             var timed_out = false;
-            console.log(this.returned);
             while (this.returned.length == 0) {
                 if (timeout_iteration) {
                     if (this.waitingit > timeout_iteration) {
@@ -49,7 +54,7 @@ class turtle {
                 return "Timed out";
             }
             else {
-                temp = `[${this.returned[0].slice(1, -1)}]`;
+                temp = this.returned[0];
                 this.returned.shift();
                 return temp;
             }
@@ -458,7 +463,10 @@ class turtle {
     getSelectedSlot() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.getSelectedSlot()`));
-            return yield this.receive(50);
+            switch (yield this.receive(50)) {
+                case "[true]":
+                    this.equipment;
+            }
         });
     }
     /**
@@ -476,7 +484,7 @@ class turtle {
     equipLeft() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.equipLeft()`));
-            return yield this.receive(50);
+            var response = yield this.receive(50);
         });
     }
     /**
@@ -530,4 +538,4 @@ class turtle {
         });
     }
 }
-exports.turtle = turtle;
+exports.default = Turtle;

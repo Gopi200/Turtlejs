@@ -1,6 +1,6 @@
 declare const direction: readonly ["North", "East", "South", "West"];
 export type Direction = typeof direction[number];
-export declare class turtle {
+export default class Turtle {
     ws: WebSocket;
     returned: string[];
     status: string;
@@ -8,6 +8,8 @@ export declare class turtle {
     y: number;
     z: number;
     facing: Direction;
+    inventory: (string | number)[][][];
+    equipment: string[];
     private waitingit;
     constructor(ws: WebSocket, location?: [number, number, number, Direction]);
     receive(timeout_iteration?: number): Promise<string>;
@@ -157,7 +159,7 @@ export declare class turtle {
     /**
      * 	Get the currently selected slot.
     */
-    getSelectedSlot(): Promise<string>;
+    getSelectedSlot(): Promise<void>;
     /**
      * 	Get the maximum amount of fuel this turtle can hold.
     */
@@ -165,7 +167,7 @@ export declare class turtle {
     /**
      * 	Equips the currently selected item to the left slot of the turtle. If no item is selected only the currently equipped item will be unequipped.
     */
-    equipLeft(): Promise<string>;
+    equipLeft(): Promise<void>;
     /**
      * 	Equips the currently selected item to the right slot of the turtle. If no item is selected only the currently equipped item will be unequipped.
     */

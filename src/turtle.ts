@@ -1,8 +1,8 @@
-import { sendresponse } from "./defaults"
+import { sendresponse, getInventory } from "./defaults"
 const direction = ["North","East","South","West"] as const
 export type Direction = typeof direction[number]
 
-export class turtle{
+export default class Turtle{
     ws:WebSocket
     returned:string[] = []
     status = ""
@@ -10,6 +10,13 @@ export class turtle{
     y=0
     z=0
     facing:Direction="North"
+    inventory = [
+        [["",0],["",0],["",0],["",0]],
+        [["",0],["",0],["",0],["",0]],
+        [["",0],["",0],["",0],["",0]],
+        [["",0],["",0],["",0],["",0]]
+    ]
+    equipment = ["",""]
     private waitingit = 0
     constructor(ws:WebSocket, location?:[number, number, number, Direction]){
         if(location){
@@ -23,7 +30,6 @@ export class turtle{
 
     async receive(timeout_iteration?:number){
         var timed_out = false
-        console.log(this.returned)
         while(this.returned.length == 0){
             if (timeout_iteration) {if(this.waitingit>timeout_iteration){timed_out = true; break}}
             await new Promise(resolve => setTimeout(resolve, 100))
@@ -32,7 +38,7 @@ export class turtle{
         var temp=""
         this.waitingit = 0
         if (timed_out){return "Timed out"}
-        else{temp = `[${this.returned[0].slice(1,-1)}]`; this.returned.shift(); return temp}
+        else{temp = this.returned[0]; this.returned.shift(); return temp}
     }
 
     /** 
@@ -398,7 +404,10 @@ export class turtle{
     */
     async getSelectedSlot(){
         this.ws.send(sendresponse(`turtle.getSelectedSlot()`))
-        return await this.receive(50)
+        switch(await this.receive(50)){
+            case "[true]":
+                this.equipment
+        }
     }
 
     /** 
@@ -414,7 +423,7 @@ export class turtle{
     */
      async equipLeft(){
         this.ws.send(sendresponse(`turtle.equipLeft()`))
-        return await this.receive(50)
+        var response = await this.receive(50)
     }
 
     /** 

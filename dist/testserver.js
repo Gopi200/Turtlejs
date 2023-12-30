@@ -14,4 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = __importDefault(require("./index"));
 const server = new index_1.default(25565);
-setTimeout(() => __awaiter(void 0, void 0, void 0, function* () { return server.connections.Egghead0.turnLeft(); }), 10000);
+setTimeout(function () {
+    return __awaiter(this, void 0, void 0, function* () { console.log(server.connections.Clown0.inventory); });
+}, 10000);

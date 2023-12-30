@@ -29,7 +29,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = require("ws");
-const turtle_1 = require("./turtle");
+const turtle_1 = __importDefault(require("./turtle"));
+const defaults_1 = require("./defaults");
 __exportStar(require("./defaults"), exports);
 const fs_1 = __importDefault(require("fs"));
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"];
@@ -62,7 +63,7 @@ class TurtleServer {
         console.log(datal);
         switch (datal[0]) {
             case "No label":
-                ws.send(this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length / slurs.length), new turtle_1.turtle(ws, datal[1].split(" ").map(function (val, i) { if (i < 3) {
+                ws.send(this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length / slurs.length), new turtle_1.default(ws, datal[1].split(" ").map(function (val, i) { if (i < 3) {
                     return +val;
                 }
                 else {
@@ -71,6 +72,7 @@ class TurtleServer {
                 break;
             case "label":
                 this.connections[datal[1]].ws = ws;
+                (0, defaults_1.getInventory)(this.connections[datal[1]]);
                 break;
             case "status":
                 this.connections[datal[1]].status = datal[2];
@@ -88,7 +90,7 @@ class TurtleServer {
         this.wss = new ws_1.WebSocketServer({ port });
         try {
             this.connections = JSON.parse(fs_1.default.readFileSync("./data/turtles.json", "utf-8"), (key, value) => { if (key != "returned") {
-                Object.setPrototypeOf(value, turtle_1.turtle.prototype);
+                Object.setPrototypeOf(value, turtle_1.default.prototype);
             } ; return value; });
         }
         catch (err) {

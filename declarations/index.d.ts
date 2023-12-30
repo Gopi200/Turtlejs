@@ -1,10 +1,10 @@
-import { turtle } from "./turtle";
+import { default as Turtle } from "./turtle";
 export * from "./defaults";
 export default class TurtleServer {
     private wss;
     connections: any;
     savedconn: {
-        [k: string]: turtle;
+        [k: string]: Turtle;
     };
     private add_connection;
     private message;

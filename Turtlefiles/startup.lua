@@ -173,8 +173,11 @@ while true do
     if err then
       _G.ws.send("status\n" .. os.getComputerLabel() .. "\nCompilation error: " .. err)
     elseif func then
-      local status = pcall(func)
-      _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring(status))
+      local status, err = pcall(func)
+      if err then
+        _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring(err))
+      else _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring("done"))
+      end
     end
   end
 end
