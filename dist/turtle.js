@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const defaults_1 = require("./defaults");
-const direction = ["North", "East", "South", "West"];
 class Turtle {
     constructor(ws, datagetter) {
         this.returned = [];

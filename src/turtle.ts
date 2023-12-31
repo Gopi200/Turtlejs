@@ -1,6 +1,4 @@
-import { sendresponse, getInventory } from "./defaults"
-const direction = ["North","East","South","West"] as const
-export type Direction = typeof direction[number]
+import { sendresponse} from "./defaults"
 
 export default class Turtle{
     ws:WebSocket

@@ -227,6 +227,7 @@ function turtle.equipLeft()
       equipment[1] = {"",0}
     end
     _G.data.update("equipment", equipment)
+    _G.data.update("inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -243,6 +244,7 @@ function turtle.equipRight()
       equipment[2] = {"",0}
     end
     _G.data.update("equipment", equipment)
+    _G.data.update("inventory", turtle.getInventory())
   end
   return succ, err
 end

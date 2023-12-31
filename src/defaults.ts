@@ -26,19 +26,3 @@ end
 
 ${sendresponse(`mine(${distance})`)}`
 }
-
-export const getInventory = async function getInventory(turtle:Turtle){
-    turtle.ws.send(`
-    local inv = {}
-    for it=1,16 do
-        local item = turtle.getItemDetail(it)
-        if item then
-            table.insert(inv, turtle.getItemDetail(it))
-        else
-            table.insert(inv, {name="",count=0})
-        end
-    end
-    ${sendresponse(`inv`)}
-    `);
-    return ((await turtle.receive()) as {[string:string]:string|number}[][])[0].map((val)=>Object.keys(val).map((nestval)=>val[nestval]))
-}

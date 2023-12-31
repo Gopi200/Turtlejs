@@ -61,9 +61,19 @@ class TurtleServer {
                         let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
                         server.connections[label] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield server.turtledb.getData("/" + label); }));
                         server.connections[label].ws.send(label);
-                        console.log(server.connections);
                         let data = omit(JSON.parse(datal[1]), "URL");
-                        data.inventory = JSON.parse(datal[2]).map((val) => Object.keys(val).map((nestval) => val[nestval]));
+                        data.inventory = JSON.parse(datal[2]).map((val) => {
+                            let itemarr = Object.keys(val).map((nestval) => { if (nestval != "nbt") {
+                                return val[nestval];
+                            } });
+                            if (itemarr[0] == null) {
+                                itemarr.shift();
+                            }
+                            if (typeof itemarr[0] == "number") {
+                                itemarr.reverse();
+                            }
+                            return itemarr;
+                        });
                         server.turtledb.push("/" + label, data);
                     });
                 })(this);
@@ -76,7 +86,18 @@ class TurtleServer {
                 break;
             case "update":
                 if (datal[2] == "inventory") {
-                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0].map((val) => Object.keys(val).map((nestval) => val[nestval])));
+                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3]).map((val) => {
+                        let itemarr = Object.keys(val).map((nestval) => { if (nestval != "nbt") {
+                            return val[nestval];
+                        } });
+                        if (itemarr[0] == null) {
+                            itemarr.shift();
+                        }
+                        if (typeof itemarr[0] == "number") {
+                            itemarr.reverse();
+                        }
+                        return itemarr;
+                    }));
                 }
                 else {
                     this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
