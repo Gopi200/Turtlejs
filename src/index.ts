@@ -34,7 +34,7 @@ export default class TurtleServer{
           (async function(server) {
             let l = Object.keys(await server.turtledb.getData("/")).length
             let label = slurs[l % slurs.length] + Math.floor(l/slurs.length)
-            server.connections[label] = new Turtle(ws, label)
+            server.connections[label] = new Turtle(ws)
             server.connections[label].ws.send(label)
             let data:{[datatype:string]:number|string|(string|number|undefined)[][]} = omit(JSON.parse(datal[1]), "URL");
             data.inventory = (JSON.parse(datal[2]) as Inventory).map((val)=>{
@@ -46,7 +46,7 @@ export default class TurtleServer{
           })(this)
           break;
         case "label":
-          this.connections[datal[1]] = new Turtle(ws, datal[1])
+          this.connections[datal[1]] = new Turtle(ws)
           break
         case "status":
           this.connections[datal[1]].status = datal[2]
@@ -72,6 +72,13 @@ export default class TurtleServer{
   private connection(ws:typeof WebSocketServer){
     ws.on('message', (data:string)=>this.message(data,ws))
   }
+
+  async getInventory(label:string){return this.turtledb.getData(`/${label}/inventory`)}
+  async getEquipment(label:string){return this.turtledb.getData(`/${label}/equipment`)}
+  async getX(label:string){return this.turtledb.getData(`/${label}/x`)}
+  async getY(label:string){return this.turtledb.getData(`/${label}/y`)}
+  async getZ(label:string){return this.turtledb.getData(`/${label}/z`)}
+  async getFacing(label:string){return this.turtledb.getData(`/${label}/facing`)}
 
   constructor(port: number){
     this.wss = new WebSocketServer({ port });
