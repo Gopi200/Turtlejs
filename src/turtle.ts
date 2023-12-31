@@ -11,34 +11,31 @@ export default class Turtle{
     z=0
     facing:Direction="North"
     inventory = [
-        [["",0],["",0],["",0],["",0]],
-        [["",0],["",0],["",0],["",0]],
-        [["",0],["",0],["",0],["",0]],
-        [["",0],["",0],["",0],["",0]]
+        ["",0],["",0],["",0],["",0],
+        ["",0],["",0],["",0],["",0],
+        ["",0],["",0],["",0],["",0],
+        ["",0],["",0],["",0],["",0]
     ]
     equipment = ["",""]
     private waitingit = 0
-    constructor(ws:WebSocket, location?:[number, number, number, Direction]){
-        if(location){
-            this.x = location[0]
-            this.y = location[1]
-            this.z = location[2]
-            this.facing = location[3]
+    constructor(ws:WebSocket, data:{[key:string]:never}){
+        for (let key in data){
+            this[key as keyof Turtle] = data[key]
         }
         this.ws = ws
     }
 
-    async receive(timeout_iteration?:number){
+    async receive(timeout_iteration?:number):Promise<any[]>{
         var timed_out = false
         while(this.returned.length == 0){
             if (timeout_iteration) {if(this.waitingit>timeout_iteration){timed_out = true; break}}
             await new Promise(resolve => setTimeout(resolve, 100))
             this.waitingit+=1
         }
-        var temp=""
+        var temp=[]
         this.waitingit = 0
-        if (timed_out){return "Timed out"}
-        else{temp = this.returned[0]; this.returned.shift(); return temp}
+        if (timed_out){return ["Timed out"]}
+        else{temp = JSON.parse(this.returned[0]); this.returned.shift(); return temp}
     }
 
     /** 
@@ -54,8 +51,8 @@ export default class Turtle{
     */
     async moveForward(){
         this.ws.send(sendresponse("turtle.forward()"))
-        switch (await this.receive(50)){
-            case "[true]":
+        switch ((await this.receive(50))[0]){
+            case true:
                 switch (this.facing) {
                     case "North":
                         this.z-=1
@@ -71,7 +68,7 @@ export default class Turtle{
                         break;
                 }
                 return true
-            case "[false]": //doesn't account for error message
+            case false:
                 return false
             default:
                 throw new Error("No response")
@@ -83,8 +80,8 @@ export default class Turtle{
     */
     async moveBackward(){
         this.ws.send(sendresponse("turtle.back()"))
-        switch (await this.receive(50)){
-            case "[true]":
+        switch ((await this.receive(50))[0]){
+            case true:
                 switch (this.facing) {
                     case "North":
                         this.z+=1
@@ -100,7 +97,7 @@ export default class Turtle{
                         break;
                 }
                 return true
-            case "[false]": //doesn't account for error message
+            case false:
                 return false
             default:
                 throw new Error("No response")
@@ -112,11 +109,11 @@ export default class Turtle{
     */
     async moveUp(){
         this.ws.send(sendresponse("turtle.up()"))
-        switch (await this.receive(50)){
-            case "[true]":
+        switch ((await this.receive(50))[0]){
+            case true:
                 this.y+=1
                 return true
-            case "[false]": //doesn't account for error message
+            case false:
                 return false
             default:
                 throw new Error("No response")
@@ -128,11 +125,11 @@ export default class Turtle{
     */
     async moveDown(){
         this.ws.send(sendresponse("turtle.down()"))
-        switch (await this.receive(50)){
-            case "[true]":
+        switch ((await this.receive(50))[0]){
+            case true:
                 this.y-=1
                 return true
-            case "[false]": //doesn't account for error message
+            case false: 
                 return false
             default:
                 throw new Error("No response")
@@ -144,11 +141,11 @@ export default class Turtle{
     */
     async turnLeft(){
         this.ws.send(sendresponse("turtle.turnLeft()"))
-        switch (await this.receive(50)) {
-            case "[true]":
+        switch ((await this.receive(50))[0]) {
+            case true:
                 this.facing = direction[direction.indexOf(this.facing)-1]
                 return true;
-            case "[false]": //doesn't account for error message
+            case false:
                 return false
             default:
                 throw new Error("No response")
@@ -160,11 +157,11 @@ export default class Turtle{
     */
     async turnRight(){
         this.ws.send(sendresponse("turtle.turnRight()"))
-        switch (await this.receive(50)) {
-            case "[true]":
+        switch ((await this.receive(50))[0]) {
+            case true:
                 this.facing = direction[direction.indexOf(this.facing)+1]
                 return true;
-            case "[false]": //doesn't account for error message
+            case false:
                 return false
             default:
                 throw new Error("No response")
@@ -404,10 +401,7 @@ export default class Turtle{
     */
     async getSelectedSlot(){
         this.ws.send(sendresponse(`turtle.getSelectedSlot()`))
-        switch(await this.receive(50)){
-            case "[true]":
-                this.equipment
-        }
+        return await this.receive()
     }
 
     /** 
@@ -439,7 +433,7 @@ export default class Turtle{
      */
     async inspectForward(){
         this.ws.send(sendresponse(`turtle.inspect()`))
-        return eval((await this.receive(50)).replace(/=/g,":"))
+        return await this.receive(50)
     }
 
     /**
@@ -447,7 +441,7 @@ export default class Turtle{
      */
     async inspectUp(){
         this.ws.send(sendresponse(`turtle.inspectUp()`))
-        return eval((await this.receive(50)).replace(/=/g,":"))
+        return await this.receive(50)
     }
 
     /**
@@ -455,7 +449,7 @@ export default class Turtle{
      */
     async inspectDown(){
         this.ws.send(sendresponse(`turtle.inspectDown()`))
-        return eval((await this.receive(50)).replace(/=/g,":"))
+        return await this.receive(50)
     }
 
     /** 

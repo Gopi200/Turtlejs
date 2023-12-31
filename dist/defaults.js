@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInventory = exports.mine = exports.sendresponse = void 0;
 function sendresponse(message) {
-    return `_G.ws.send(os.getComputerLabel() .. \"\\n\" .. ${message})`;
+    return `_G.ws.send(os.getComputerLabel() .. \"\\n\" .. json.encode({${message}}))`;
 }
 exports.sendresponse = sendresponse;
 const mine = function mine(distance) {
@@ -50,9 +50,9 @@ const getInventory = function getInventory(turtle) {
             table.insert(inv, {name="",count=0})
         end
     end
-    ${sendresponse(`json.encode(inv)`)}
+    ${sendresponse(`inv`)}
     `);
-        return JSON.parse(`[${(yield turtle.receive()).replace(/name=/g, `"name":`).replace(/count=/g, `"count":`)}]`).map((val) => Object.keys(val).map((nestval) => val[nestval]));
+        return (yield turtle.receive())[0].map((val) => Object.keys(val).map((nestval) => val[nestval]));
     });
 };
 exports.getInventory = getInventory;

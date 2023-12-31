@@ -1,7 +1,7 @@
 import Turtle from "./turtle"
 
 export function sendresponse(message:string){
-    return `_G.ws.send(os.getComputerLabel() .. \"\\n\" .. ${message})`
+    return `_G.ws.send(os.getComputerLabel() .. \"\\n\" .. json.encode({${message}}))`
 }
 
 export const mine = function mine(distance?:number) {return `
@@ -38,7 +38,7 @@ export const getInventory = async function getInventory(turtle:Turtle){
             table.insert(inv, {name="",count=0})
         end
     end
-    ${sendresponse(`json.encode(inv)`)}
+    ${sendresponse(`inv`)}
     `);
-    return (JSON.parse(`[${(await turtle.receive()).replace(/name=/g,`"name":`).replace(/count=/g,`"count":`)}]`) as {[string:string]:string|number}[]).map((val)=>Object.keys(val).map((nestval)=>val[nestval]))
+    return ((await turtle.receive()) as {[string:string]:string|number}[][])[0].map((val)=>Object.keys(val).map((nestval)=>val[nestval]))
 }

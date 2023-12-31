@@ -1,4 +1,4 @@
-json = require "json"
+_G.json = require "json"
 
 _G.data = {saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
 
@@ -102,12 +102,12 @@ if not fs.exists("startup.lua") then
   fs.copy("disk/data.txt", "data.txt")
   rfile = fs.open("data.txt", "rb")
   if not os.getComputerLabel() then
-    URL = rfile.readLine()
+    data.init()
     ws = false
     while ws == false do
-      ws = http.websocket(URL)
+      ws = http.websocket(data.saveddata.URL)
     end
-    ws.send("No label\n" .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine() .. " " .. rfile.readLine())
+    ws.send("No label\n" .. json.encode(data.saveddata))
     os.setComputerLabel(ws.receive())
   end
   os.reboot()

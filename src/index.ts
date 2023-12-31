@@ -3,6 +3,8 @@ import {Direction, default as Turtle} from "./turtle"
 import { getInventory } from "./defaults"
 export * from "./defaults"
 import fs from "fs"
+import { JsonDB, Config } from "node-json-db"
+import { updateLanguageServiceSourceFile } from "typescript"
 
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
 
@@ -13,36 +15,32 @@ try {fs.writeFileSync("./data/turtles.json", "{}", { flag: 'wx' },  (err:Error) 
   }
 });} catch {}
 
-export default class TurtleServer{
-  private wss:typeof WebSocketServer;
-  connections;
-  savedconn:{[k:string]:Turtle}={}
+function omit<T extends object, K extends keyof T>(obj: T, key: K): Omit<T, K> {
+  const o: Omit<T, K> & Partial<Pick<T, K>> = { ...obj };
+  delete o[key];
+  return o;
+}
 
-  private add_connection(label:string,turt:Turtle){
-    this.connections[label] = turt
-    const { ws, ...turtn } = this.connections[label]
-    this.savedconn[label] = turtn
-    fs.writeFile("./data/turtles.json", JSON.stringify(this.savedconn), (err:Error) => {
-      if (err) {
-        console.log(err)
-      }
-    })
-    return label
-  }
+export default class TurtleServer{
+  turtledb = new JsonDB(new Config("./data/turtles.json", true, false, "."))
+  private wss:typeof WebSocketServer;
+  connections:{[label:string]:Turtle} = {}
 
   private message(data:String, ws:typeof WebSocketServer) {
     let datal = data.toString().split("\n")
       console.log(datal)
       switch (datal[0]) {
         case "No label":
-          ws.send(this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length/slurs.length), new Turtle(ws, (datal[1].split(" ").map(function(val, i){if (i<3){return +val} else{return val as Direction}}) as [number,number,number,Direction]))))
+          this.connections[datal[1]] = new Turtle(ws, omit(JSON.parse(datal[1]), "URL") as {})
+          this.turtledb.push("."+slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length/slurs.length), this.connections[datal[1]])
           break;
         case "label":
           this.connections[datal[1]].ws = ws
-          getInventory(this.connections[datal[1]])
           break
         case "status":
           this.connections[datal[1]].status = datal[2]
+          break
+        case "update":
           break
         default:
           this.connections[datal[0]].returned.push(datal[1])
@@ -57,13 +55,7 @@ export default class TurtleServer{
   constructor(port: number){
     this.wss = new WebSocketServer({ port });
 
-    try {this.connections = JSON.parse(fs.readFileSync("./data/turtles.json", "utf-8"), (key, value)=>{if (key != "returned") {Object.setPrototypeOf(value, Turtle.prototype)}; return value})}
-    catch(err) {console.error(err)}
-    
-    for (const key of Object.keys(this.connections)){
-      const { ws, ...turtn } = this.connections[key]
-      this.savedconn[key] = turtn
-    }
+    (async ()=>this.connections = await this.turtledb.getData("."))()
 
     this.wss.on('connection', (ws:typeof WebSocketServer)=>this.connection(ws))
   } 

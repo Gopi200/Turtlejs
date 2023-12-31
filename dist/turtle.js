@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const defaults_1 = require("./defaults");
 const direction = ["North", "East", "South", "West"];
 class Turtle {
-    constructor(ws, location) {
+    constructor(ws, data) {
         this.returned = [];
         this.status = "";
         this.x = 0;
@@ -20,18 +20,15 @@ class Turtle {
         this.z = 0;
         this.facing = "North";
         this.inventory = [
-            [["", 0], ["", 0], ["", 0], ["", 0]],
-            [["", 0], ["", 0], ["", 0], ["", 0]],
-            [["", 0], ["", 0], ["", 0], ["", 0]],
-            [["", 0], ["", 0], ["", 0], ["", 0]]
+            ["", 0], ["", 0], ["", 0], ["", 0],
+            ["", 0], ["", 0], ["", 0], ["", 0],
+            ["", 0], ["", 0], ["", 0], ["", 0],
+            ["", 0], ["", 0], ["", 0], ["", 0]
         ];
         this.equipment = ["", ""];
         this.waitingit = 0;
-        if (location) {
-            this.x = location[0];
-            this.y = location[1];
-            this.z = location[2];
-            this.facing = location[3];
+        for (let key in data) {
+            this[key] = data[key];
         }
         this.ws = ws;
     }
@@ -48,13 +45,13 @@ class Turtle {
                 yield new Promise(resolve => setTimeout(resolve, 100));
                 this.waitingit += 1;
             }
-            var temp = "";
+            var temp = [];
             this.waitingit = 0;
             if (timed_out) {
-                return "Timed out";
+                return ["Timed out"];
             }
             else {
-                temp = this.returned[0];
+                temp = JSON.parse(this.returned[0]);
                 this.returned.shift();
                 return temp;
             }
@@ -75,8 +72,8 @@ class Turtle {
     moveForward() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.forward()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
+            switch ((yield this.receive(50))[0]) {
+                case true:
                     switch (this.facing) {
                         case "North":
                             this.z -= 1;
@@ -92,7 +89,7 @@ class Turtle {
                             break;
                     }
                     return true;
-                case "[false]": //doesn't account for error message
+                case false:
                     return false;
                 default:
                     throw new Error("No response");
@@ -105,8 +102,8 @@ class Turtle {
     moveBackward() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.back()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
+            switch ((yield this.receive(50))[0]) {
+                case true:
                     switch (this.facing) {
                         case "North":
                             this.z += 1;
@@ -122,7 +119,7 @@ class Turtle {
                             break;
                     }
                     return true;
-                case "[false]": //doesn't account for error message
+                case false:
                     return false;
                 default:
                     throw new Error("No response");
@@ -135,11 +132,11 @@ class Turtle {
     moveUp() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.up()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
+            switch ((yield this.receive(50))[0]) {
+                case true:
                     this.y += 1;
                     return true;
-                case "[false]": //doesn't account for error message
+                case false:
                     return false;
                 default:
                     throw new Error("No response");
@@ -152,11 +149,11 @@ class Turtle {
     moveDown() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.down()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
+            switch ((yield this.receive(50))[0]) {
+                case true:
                     this.y -= 1;
                     return true;
-                case "[false]": //doesn't account for error message
+                case false:
                     return false;
                 default:
                     throw new Error("No response");
@@ -169,11 +166,11 @@ class Turtle {
     turnLeft() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.turnLeft()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
+            switch ((yield this.receive(50))[0]) {
+                case true:
                     this.facing = direction[direction.indexOf(this.facing) - 1];
                     return true;
-                case "[false]": //doesn't account for error message
+                case false:
                     return false;
                 default:
                     throw new Error("No response");
@@ -186,11 +183,11 @@ class Turtle {
     turnRight() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.turnRight()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
+            switch ((yield this.receive(50))[0]) {
+                case true:
                     this.facing = direction[direction.indexOf(this.facing) + 1];
                     return true;
-                case "[false]": //doesn't account for error message
+                case false:
                     return false;
                 default:
                     throw new Error("No response");
@@ -463,10 +460,7 @@ class Turtle {
     getSelectedSlot() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.getSelectedSlot()`));
-            switch (yield this.receive(50)) {
-                case "[true]":
-                    this.equipment;
-            }
+            return yield this.receive();
         });
     }
     /**
@@ -502,7 +496,7 @@ class Turtle {
     inspectForward() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.inspect()`));
-            return eval((yield this.receive(50)).replace(/=/g, ":"));
+            return yield this.receive(50);
         });
     }
     /**
@@ -511,7 +505,7 @@ class Turtle {
     inspectUp() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.inspectUp()`));
-            return eval((yield this.receive(50)).replace(/=/g, ":"));
+            return yield this.receive(50);
         });
     }
     /**
@@ -520,7 +514,7 @@ class Turtle {
     inspectDown() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.inspectDown()`));
-            return eval((yield this.receive(50)).replace(/=/g, ":"));
+            return yield this.receive(50);
         });
     }
     /**
