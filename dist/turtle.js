@@ -11,12 +11,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const defaults_1 = require("./defaults");
 class Turtle {
-    constructor(ws, datagetter) {
+    constructor(ws, label) {
         this.returned = [];
         this.status = "";
         this.waitingit = 0;
         this.ws = ws;
-        this.datagetter = datagetter;
+        this.inventory = (turtledb) => __awaiter(this, void 0, void 0, function* () { return turtledb.getData(`/${label}/inventory`); });
+        this.x = (turtledb) => __awaiter(this, void 0, void 0, function* () { return turtledb.getData(`/${label}/x`); });
+        this.y = (turtledb) => __awaiter(this, void 0, void 0, function* () { return turtledb.getData(`/${label}/y`); });
+        this.z = (turtledb) => __awaiter(this, void 0, void 0, function* () { return turtledb.getData(`/${label}/z`); });
+        this.equipment = (turtledb) => __awaiter(this, void 0, void 0, function* () { return turtledb.getData(`/${label}/equipment`); });
+        this.facing = (turtledb) => __awaiter(this, void 0, void 0, function* () { return turtledb.getData(`/${label}/facing`); });
     }
     receive(timeout_iteration) {
         return __awaiter(this, void 0, void 0, function* () {

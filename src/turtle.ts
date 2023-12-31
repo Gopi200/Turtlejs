@@ -1,14 +1,26 @@
 import { sendresponse} from "./defaults"
+import {JsonDB} from "node-json-db"
 
 export default class Turtle{
     ws:WebSocket
     returned:string[] = []
     status = ""
-    datagetter:Function
+    inventory:Function
+    x:Function
+    y:Function
+    z:Function
+    equipment:Function
+    facing:Function
+
     private waitingit = 0
-    constructor(ws:WebSocket, datagetter:Function){
+    constructor(ws:WebSocket, label:string){
         this.ws = ws
-        this.datagetter = datagetter
+        this.inventory = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/inventory`)
+        this.x = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/x`)
+        this.y = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/y`)
+        this.z = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/z`)
+        this.equipment = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/equipment`)
+        this.facing = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/facing`)
     }
 
     async receive(timeout_iteration?:number):Promise<any[]>{

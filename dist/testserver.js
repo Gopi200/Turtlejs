@@ -15,5 +15,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = __importDefault(require("./index"));
 const server = new index_1.default(25565);
 setTimeout(function () {
-    return __awaiter(this, void 0, void 0, function* () { console.log(yield server.connections.Asshole0.equipLeft()); });
+    return __awaiter(this, void 0, void 0, function* () { console.log(yield server.connections.Asshole0.inventory(server.turtledb)); });
 }, 10000);
