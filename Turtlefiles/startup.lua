@@ -84,22 +84,22 @@ end
 
 
 
-function data.init()
+function _G.data.init()
   local datastring = fs.open("data.txt", "rb").readAll()
   local it = 0
   for s in datastring:gmatch("[^\n]+") do
     it = it+1
-    if data.datamap[2][data.datamap[1][it]] == "string" then data.saveddata[data.datamap[1][it]] = s
-    elseif data.datamap[2][data.datamap[1][it]] == "number" then data.saveddata[data.datamap[1][it]] = tonumber(s) end
+    if _G.data.datamap[2][_G.data.datamap[1][it]] == "string" then _G.data.saveddata[_G.data.datamap[1][it]] = s
+    elseif _G.data.datamap[2][_G.data.datamap[1][it]] == "number" then _G.data.saveddata[_G.data.datamap[1][it]] = tonumber(s) end
   end
 end
 
-function data.update(key, val)
+function _G.data.update(key, val)
   if key == "inventory" then
-    data.inventory = val
+    _G.data.inventory = val
     ws.send("update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode(val))
   else
-    data.saveddata[key] = val
+    _G.data.saveddata[key] = val
     local datastring = ""
     for _, key in ipairs(_G.data.datamap[1]) do
       datastring = datastring .. _G.data.saveddata[key] .. "\n"
