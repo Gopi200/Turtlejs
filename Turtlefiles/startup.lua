@@ -84,6 +84,8 @@ end
 
 
 
+_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
+
 function _G.data.init()
   local datastring = fs.open("data.txt", "rb").readAll()
   local it = 0
@@ -108,9 +110,6 @@ function _G.data.update(key, val)
     ws.send("update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))
   end
 end
-
-_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
-
 
 
 
