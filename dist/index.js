@@ -59,7 +59,7 @@ class TurtleServer {
                     return __awaiter(this, void 0, void 0, function* () {
                         let l = Object.keys(yield server.turtledb.getData("/")).length;
                         let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
-                        server.connections[label] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield server.turtledb.getData("/" + label); }));
+                        server.connections[label] = new turtle_1.default(ws, label);
                         server.connections[label].ws.send(label);
                         let data = omit(JSON.parse(datal[1]), "URL");
                         data.inventory = JSON.parse(datal[2]).map((val) => {
@@ -79,7 +79,7 @@ class TurtleServer {
                 })(this);
                 break;
             case "label":
-                this.connections[datal[1]] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield this.turtledb.getData("/" + datal[1]); }));
+                this.connections[datal[1]] = new turtle_1.default(ws, datal[1]);
                 break;
             case "status":
                 this.connections[datal[1]].status = datal[2];
