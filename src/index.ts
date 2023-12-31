@@ -1,10 +1,8 @@
 import {WebSocketServer} from "ws"
-import {Direction, default as Turtle} from "./turtle"
-import { getInventory } from "./defaults"
+import {default as Turtle} from "./turtle"
 export * from "./defaults"
 import fs from "fs"
 import { JsonDB, Config } from "node-json-db"
-import { updateLanguageServiceSourceFile } from "typescript"
 
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
 
@@ -38,9 +36,12 @@ export default class TurtleServer{
             let label = slurs[l % slurs.length] + Math.floor(l/slurs.length)
             server.connections[label] = new Turtle(ws, async ()=>await server.turtledb.getData("/"+label))
             server.connections[label].ws.send(label)
-            console.log(server.connections)
-            let data:{[datatype:string]:number|string|(string|number)[][]} = omit(JSON.parse(datal[1]), "URL");
-            data.inventory = (JSON.parse(datal[2]) as Inventory).map((val)=>Object.keys(val).map((nestval)=>val[nestval]))
+            let data:{[datatype:string]:number|string|(string|number|undefined)[][]} = omit(JSON.parse(datal[1]), "URL");
+            data.inventory = (JSON.parse(datal[2]) as Inventory).map((val)=>{
+              let itemarr = Object.keys(val).map((nestval)=>{if (nestval!="nbt"){return val[nestval]}});
+              if (itemarr[0] == null) {itemarr.shift()}
+              if (typeof itemarr[0] == "number"){itemarr.reverse()}
+              return itemarr})
             server.turtledb.push("/"+ label, data)
           })(this)
           break;
@@ -52,7 +53,11 @@ export default class TurtleServer{
           break
         case "update":
           if (datal[2] == "inventory"){
-            this.turtledb.push(`/${datal[1]}/${datal[2]}`, (JSON.parse(datal[3])[0] as Inventory).map((val)=>Object.keys(val).map((nestval)=>val[nestval])))
+            this.turtledb.push(`/${datal[1]}/${datal[2]}`, (JSON.parse(datal[3][0]) as Inventory).map((val)=>{
+              let itemarr = Object.keys(val).map((nestval)=>{if (nestval!="nbt"){return val[nestval]}});
+              if (itemarr[0] == null) {itemarr.shift()}
+              if (typeof itemarr[0] == "number"){itemarr.reverse()}
+              return itemarr}))
           }
           else{
             this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0])

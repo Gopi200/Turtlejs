@@ -1,5 +1,3 @@
-declare const direction: readonly ["North", "East", "South", "West"];
-export type Direction = typeof direction[number];
 export default class Turtle {
     ws: WebSocket;
     returned: string[];
@@ -184,4 +182,3 @@ export default class Turtle {
     */
     getItemDetail(slot?: number, detailed?: boolean): Promise<any[]>;
 }
-export {};
