@@ -13,25 +13,24 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = require("ws");
-const turtle_1 = require("./turtle");
+const turtle_1 = __importDefault(require("./turtle"));
 __exportStar(require("./defaults"), exports);
 const fs_1 = __importDefault(require("fs"));
+const node_json_db_1 = require("node-json-db");
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"];
 try {
     fs_1.default.mkdirSync("./data");
@@ -45,35 +44,43 @@ try {
     });
 }
 catch (_b) { }
+function omit(obj, key) {
+    const o = Object.assign({}, obj);
+    delete o[key];
+    return o;
+}
 class TurtleServer {
-    add_connection(label, turt) {
-        this.connections[label] = turt;
-        const _a = this.connections[label], { ws } = _a, turtn = __rest(_a, ["ws"]);
-        this.savedconn[label] = turtn;
-        fs_1.default.writeFile("./data/turtles.json", JSON.stringify(this.savedconn), (err) => {
-            if (err) {
-                console.log(err);
-            }
-        });
-        return label;
-    }
     message(data, ws) {
         let datal = data.toString().split("\n");
         console.log(datal);
         switch (datal[0]) {
             case "No label":
-                ws.send(this.add_connection(slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length / slurs.length), new turtle_1.turtle(ws, datal[1].split(" ").map(function (val, i) { if (i < 3) {
-                    return +val;
-                }
-                else {
-                    return val;
-                } }))));
+                (function (server) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        let l = Object.keys(yield server.turtledb.getData("/")).length;
+                        let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
+                        server.connections[label] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield server.turtledb.getData("/" + label); }));
+                        server.connections[label].ws.send(label);
+                        console.log(server.connections);
+                        let data = omit(JSON.parse(datal[1]), "URL");
+                        data.inventory = JSON.parse(datal[2]).map((val) => Object.keys(val).map((nestval) => val[nestval]));
+                        server.turtledb.push("/" + label, data);
+                    });
+                })(this);
                 break;
             case "label":
-                this.connections[datal[1]].ws = ws;
+                this.connections[datal[1]] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield this.turtledb.getData("/" + datal[1]); }));
                 break;
             case "status":
                 this.connections[datal[1]].status = datal[2];
+                break;
+            case "update":
+                if (datal[2] == "inventory") {
+                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0].map((val) => Object.keys(val).map((nestval) => val[nestval])));
+                }
+                else {
+                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
+                }
                 break;
             default:
                 this.connections[datal[0]].returned.push(datal[1]);
@@ -84,20 +91,9 @@ class TurtleServer {
         ws.on('message', (data) => this.message(data, ws));
     }
     constructor(port) {
-        this.savedconn = {};
+        this.turtledb = new node_json_db_1.JsonDB(new node_json_db_1.Config("./data/turtles.json", true, false, "/"));
+        this.connections = {};
         this.wss = new ws_1.WebSocketServer({ port });
-        try {
-            this.connections = JSON.parse(fs_1.default.readFileSync("./data/turtles.json", "utf-8"), (key, value) => { if (key != "returned") {
-                Object.setPrototypeOf(value, turtle_1.turtle.prototype);
-            } ; return value; });
-        }
-        catch (err) {
-            console.error(err);
-        }
-        for (const key of Object.keys(this.connections)) {
-            const _a = this.connections[key], { ws } = _a, turtn = __rest(_a, ["ws"]);
-            this.savedconn[key] = turtn;
-        }
         this.wss.on('connection', (ws) => this.connection(ws));
     }
 }

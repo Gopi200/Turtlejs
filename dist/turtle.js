@@ -9,30 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.turtle = void 0;
 const defaults_1 = require("./defaults");
 const direction = ["North", "East", "South", "West"];
-class turtle {
-    constructor(ws, location) {
+class Turtle {
+    constructor(ws, datagetter) {
         this.returned = [];
         this.status = "";
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-        this.facing = "North";
         this.waitingit = 0;
-        if (location) {
-            this.x = location[0];
-            this.y = location[1];
-            this.z = location[2];
-            this.facing = location[3];
-        }
         this.ws = ws;
+        this.datagetter = datagetter;
     }
     receive(timeout_iteration) {
         return __awaiter(this, void 0, void 0, function* () {
             var timed_out = false;
-            console.log(this.returned);
             while (this.returned.length == 0) {
                 if (timeout_iteration) {
                     if (this.waitingit > timeout_iteration) {
@@ -43,13 +32,13 @@ class turtle {
                 yield new Promise(resolve => setTimeout(resolve, 100));
                 this.waitingit += 1;
             }
-            var temp = "";
+            var temp = [];
             this.waitingit = 0;
             if (timed_out) {
-                return "Timed out";
+                return ["Timed out"];
             }
             else {
-                temp = `[${this.returned[0].slice(1, -1)}]`;
+                temp = JSON.parse(this.returned[0]);
                 this.returned.shift();
                 return temp;
             }
@@ -70,28 +59,7 @@ class turtle {
     moveForward() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.forward()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
-                    switch (this.facing) {
-                        case "North":
-                            this.z -= 1;
-                            break;
-                        case "East":
-                            this.x += 1;
-                            break;
-                        case "South":
-                            this.z += 1;
-                            break;
-                        case "West":
-                            this.x -= 1;
-                            break;
-                    }
-                    return true;
-                case "[false]": //doesn't account for error message
-                    return false;
-                default:
-                    throw new Error("No response");
-            }
+            return yield this.receive(50);
         });
     }
     /**
@@ -100,28 +68,7 @@ class turtle {
     moveBackward() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.back()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
-                    switch (this.facing) {
-                        case "North":
-                            this.z += 1;
-                            break;
-                        case "East":
-                            this.x -= 1;
-                            break;
-                        case "South":
-                            this.z -= 1;
-                            break;
-                        case "West":
-                            this.x += 1;
-                            break;
-                    }
-                    return true;
-                case "[false]": //doesn't account for error message
-                    return false;
-                default:
-                    throw new Error("No response");
-            }
+            return yield this.receive(50);
         });
     }
     /**
@@ -130,15 +77,7 @@ class turtle {
     moveUp() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.up()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
-                    this.y += 1;
-                    return true;
-                case "[false]": //doesn't account for error message
-                    return false;
-                default:
-                    throw new Error("No response");
-            }
+            return yield this.receive(50);
         });
     }
     /**
@@ -147,15 +86,7 @@ class turtle {
     moveDown() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.down()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
-                    this.y -= 1;
-                    return true;
-                case "[false]": //doesn't account for error message
-                    return false;
-                default:
-                    throw new Error("No response");
-            }
+            return yield this.receive(50);
         });
     }
     /**
@@ -164,15 +95,7 @@ class turtle {
     turnLeft() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.turnLeft()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
-                    this.facing = direction[direction.indexOf(this.facing) - 1];
-                    return true;
-                case "[false]": //doesn't account for error message
-                    return false;
-                default:
-                    throw new Error("No response");
-            }
+            return yield this.receive(50);
         });
     }
     /**
@@ -181,15 +104,7 @@ class turtle {
     turnRight() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)("turtle.turnRight()"));
-            switch (yield this.receive(50)) {
-                case "[true]":
-                    this.facing = direction[direction.indexOf(this.facing) + 1];
-                    return true;
-                case "[false]": //doesn't account for error message
-                    return false;
-                default:
-                    throw new Error("No response");
-            }
+            return yield this.receive(50);
         });
     }
     /**
@@ -458,7 +373,7 @@ class turtle {
     getSelectedSlot() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.getSelectedSlot()`));
-            return yield this.receive(50);
+            return yield this.receive();
         });
     }
     /**
@@ -476,7 +391,7 @@ class turtle {
     equipLeft() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.equipLeft()`));
-            return yield this.receive(50);
+            var response = yield this.receive(50);
         });
     }
     /**
@@ -494,7 +409,7 @@ class turtle {
     inspectForward() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.inspect()`));
-            return eval((yield this.receive(50)).replace(/=/g, ":"));
+            return yield this.receive(50);
         });
     }
     /**
@@ -503,7 +418,7 @@ class turtle {
     inspectUp() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.inspectUp()`));
-            return eval((yield this.receive(50)).replace(/=/g, ":"));
+            return yield this.receive(50);
         });
     }
     /**
@@ -512,7 +427,7 @@ class turtle {
     inspectDown() {
         return __awaiter(this, void 0, void 0, function* () {
             this.ws.send((0, defaults_1.sendresponse)(`turtle.inspectDown()`));
-            return eval((yield this.receive(50)).replace(/=/g, ":"));
+            return yield this.receive(50);
         });
     }
     /**
@@ -530,4 +445,4 @@ class turtle {
         });
     }
 }
-exports.turtle = turtle;
+exports.default = Turtle;
