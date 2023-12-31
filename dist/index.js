@@ -62,7 +62,9 @@ class TurtleServer {
                         server.connections[label] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield server.turtledb.getData("/" + label); }));
                         server.connections[label].ws.send(label);
                         console.log(server.connections);
-                        server.turtledb.push("/" + label, omit(JSON.parse(datal[1]), "URL"));
+                        let data = omit(JSON.parse(datal[1]), "URL");
+                        data.inventory = JSON.parse(datal[2]).map((val) => Object.keys(val).map((nestval) => val[nestval]));
+                        server.turtledb.push("/" + label, data);
                     });
                 })(this);
                 break;
@@ -73,7 +75,12 @@ class TurtleServer {
                 this.connections[datal[1]].status = datal[2];
                 break;
             case "update":
-                this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
+                if (datal[2] == "inventory") {
+                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0].map((val) => Object.keys(val).map((nestval) => val[nestval])));
+                }
+                else {
+                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
+                }
                 break;
             default:
                 this.connections[datal[0]].returned.push(datal[1]);

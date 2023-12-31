@@ -1,5 +1,45 @@
 _G.json = require "json"
 
+
+
+function table.val_to_str ( v )
+  if "string" == type( v ) then
+    v = string.gsub( v, "\n", "\\n" )
+    if string.match( string.gsub(v,"[^'\"]",""), '^"+$' ) then
+      return "'" .. v .. "'"
+    end
+    return '"' .. string.gsub(v,'"', '\\"' ) .. '"'
+  else
+    return "table" == type( v ) and table.tostring( v ) or
+      tostring( v )
+  end
+end
+  
+function table.key_to_str ( k )
+  if "string" == type( k ) and string.match( k, "^[_%a][_%a%d]*$" ) then
+    return k
+  else
+    return "[" .. table.val_to_str( k ) .. "]"
+  end
+end
+  
+function table.tostring( tbl )
+  local result, done = {}, {}
+  for k, v in ipairs( tbl ) do
+    table.insert( result, table.val_to_str( v ) )
+    done[ k ] = true
+  end
+  for k, v in pairs( tbl ) do
+    if not done[ k ] then
+      table.insert( result,
+        table.key_to_str( k ) .. "=" .. table.val_to_str( v ) )
+    end
+  end
+  return "{" .. table.concat( result, "," ) .. "}"
+end
+
+
+
 local originalfwd = turtle.forward
 function turtle.forward()
   local succ, err = originalfwd()
@@ -58,6 +98,162 @@ function turtle.turnRight()
   return succ, err
 end
 
+local originaldig = turtle.dig
+function turtle.dig(side)
+  local succ, err = originaldig(side)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originaldigup = turtle.digUp
+function turtle.digUp(side)
+  local succ, err = originaldigup(side)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originaldigdown = turtle.digDown
+function turtle.digDown(side)
+  local succ, err = originaldigdown(side)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originalplace = turtle.place
+function turtle.place(text)
+  local succ, err = originalplace(text)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originalplaceup = turtle.placeUp
+function turtle.placeUp(text)
+  local succ, err = originalplaceup(text)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originalplacedown = turtle.placeDown
+function turtle.placeDown(text)
+  local succ, err = originalplacedown(side)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originaldrop = turtle.drop
+function turtle.drop(count)
+  local succ, err = originaldrop(count)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originaldropup = turtle.dropUp
+function turtle.dropUp(count)
+  local succ, err = originaldropup(count)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originaldropdown = turtle.dropDown
+function turtle.dropDown(count)
+  local succ, err = originaldropdown(count)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originalsuck = turtle.suck
+function turtle.suck(count)
+  local succ, err = originalsuck(count)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originalsuckup = turtle.suckUp
+function turtle.suckUp(count)
+  local succ, err = originalsuckup(count)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originalsuckdown = turtle.suckDown
+function turtle.suckDown(count)
+  local succ, err = originalsuckdown(count)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originaltransferto = turtle.transferTo
+function turtle.transferTo(slot, count)
+  local succ, err = originaltransferto(slot, count)
+  if succ then
+    _G.data.update("inventory", turtle.getInventory())
+  end
+  return succ, err
+end
+
+local originalequipleft = turtle.equipLeft
+function turtle.equipLeft()
+  local item = turtle.getItemDetail()
+  local succ, err = originalequipleft()
+  if succ then
+    local equipment = _G.data.saveddata.equipment
+    equipment[1][1] = item.name
+    equipment[1][2] = 1
+    _G.data.update("equipment", equipment)
+  end
+  return succ, err
+end
+
+local originalequipright = turtle.equipRight
+function turtle.equipRight()
+  local item = turtle.getItemDetail()
+  local succ, err = originalequipright()
+  if succ then
+    local equipment = _G.data.saveddata.equipment
+    equipment[2][1] = item.name
+    equipment[2][2] = 1
+    _G.data.update("equipment", equipment)
+  end
+  return succ, err
+end
+
+function turtle.getInventory()
+  local inv = {}
+  for it=1,16 do
+      local item = turtle.getItemDetail(it)
+      if item then
+          table.insert(inv, turtle.getItemDetail(it))
+      else
+          table.insert(inv, {name="",count=0})
+      end
+  end
+  return inv
+end
+
 
 
 function awaitconnect()
@@ -69,22 +265,9 @@ function awaitconnect()
   return ws
 end
 
-function turtle.getInventory()
-    local inv = {}
-    for it=1,16 do
-        local item = turtle.getItemDetail(it)
-        if item then
-            table.insert(inv, turtle.getItemDetail(it))
-        else
-            table.insert(inv, {name="",count=0})
-        end
-    end
-    return inv
-end
 
 
-
-_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
+_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing", "equipment"},{URL="string",x="number",y="number",z="number",facing="string",equipment="table"}}}
 
 function _G.data.init()
   local datastring = fs.open("data.txt", "rb").readAll()
@@ -92,7 +275,8 @@ function _G.data.init()
   for s in datastring:gmatch("[^\n]+") do
     it = it+1
     if _G.data.datamap[2][_G.data.datamap[1][it]] == "string" then _G.data.saveddata[_G.data.datamap[1][it]] = s
-    elseif _G.data.datamap[2][_G.data.datamap[1][it]] == "number" then _G.data.saveddata[_G.data.datamap[1][it]] = tonumber(s) end
+    elseif _G.data.datamap[2][_G.data.datamap[1][it]] == "number" then _G.data.saveddata[_G.data.datamap[1][it]] = tonumber(s) 
+    elseif _G.data.datamap[2][_G.data.datamap[1][it]] == "table" then _G.data.saveddata[_G.data.datamap[1][it]] = load("return "..s)() end
   end
 end
 
@@ -104,7 +288,11 @@ function _G.data.update(key, val)
     _G.data.saveddata[key] = val
     local datastring = ""
     for _, key in ipairs(_G.data.datamap[1]) do
-      datastring = datastring .. _G.data.saveddata[key] .. "\n"
+      if key == "equipment" then
+        datastring = datastring .. table.tostring(_G.data.saveddata[key]) .. "\n"
+      else
+        datastring = datastring .. _G.data.saveddata[key] .. "\n"
+      end
     end
     fs.open("data.txt", "wb").write(datastring:sub(1,-2))
     ws.send("update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))

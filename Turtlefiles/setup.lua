@@ -15,7 +15,8 @@ else
     print("What is my z coordinate?")
     wfile.write(io.stdin:read() .. "\n")
     print("Which direction am I facing?")
-    wfile.write(io.stdin:read())
+    wfile.write(io.stdin:read() .. "\n")
+    wfile.write("{{\"\",0},{\"\",0}}")
     wfile.close()
 end
 shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/json.lua", "/disk/json.lua")
