@@ -4,16 +4,9 @@ export default class Turtle {
     ws: WebSocket;
     returned: string[];
     status: string;
-    x: number;
-    y: number;
-    z: number;
-    facing: Direction;
-    inventory: (string | number)[][];
-    equipment: string[];
+    datagetter: Function;
     private waitingit;
-    constructor(ws: WebSocket, data: {
-        [key: string]: never;
-    });
+    constructor(ws: WebSocket, datagetter: Function);
     receive(timeout_iteration?: number): Promise<any[]>;
     /**
      * 	Craft a recipe based on the turtle's inventory. The turtle cannot contain any items other than the ones involved in the recipe.
@@ -22,27 +15,27 @@ export default class Turtle {
     /**
      * 	Move the turtle forward one block.
     */
-    moveForward(): Promise<boolean>;
+    moveForward(): Promise<any[]>;
     /**
      * 	Move the turtle back one block.
     */
-    moveBackward(): Promise<boolean>;
+    moveBackward(): Promise<any[]>;
     /**
      * 	Move the turtle up one block.
     */
-    moveUp(): Promise<boolean>;
+    moveUp(): Promise<any[]>;
     /**
      * 	Move the turtle down one block.
     */
-    moveDown(): Promise<boolean>;
+    moveDown(): Promise<any[]>;
     /**
      * 	Rotate the turtle to the left by 90 degrees.
     */
-    turnLeft(): Promise<boolean>;
+    turnLeft(): Promise<any[]>;
     /**
      * 	Rotate the turtle to the right by 90 degrees.
     */
-    turnRight(): Promise<boolean>;
+    turnRight(): Promise<any[]>;
     /**
      *  Break the block in front of the turtle.
     */

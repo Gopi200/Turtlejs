@@ -18,7 +18,6 @@ else
     wfile.write(io.stdin:read())
     wfile.close()
 end
-shell.run("set motd.enable false")
 shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/json.lua", "/disk/json.lua")
 shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/startup.lua", "/disk/startup.lua")
 os.reboot()

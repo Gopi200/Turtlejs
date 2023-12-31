@@ -21,8 +21,10 @@ function omit<T extends object, K extends keyof T>(obj: T, key: K): Omit<T, K> {
   return o;
 }
 
+type Inventory = {[key:string]:string|number}[]
+
 export default class TurtleServer{
-  turtledb = new JsonDB(new Config("./data/turtles.json", true, false, "."))
+  turtledb = new JsonDB(new Config("./data/turtles.json", true, false, "/"))
   private wss:typeof WebSocketServer;
   connections:{[label:string]:Turtle} = {}
 
@@ -31,16 +33,30 @@ export default class TurtleServer{
       console.log(datal)
       switch (datal[0]) {
         case "No label":
-          this.connections[datal[1]] = new Turtle(ws, omit(JSON.parse(datal[1]), "URL") as {})
-          this.turtledb.push("."+slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length/slurs.length), this.connections[datal[1]])
+          (async function(server) {
+            let l = Object.keys(await server.turtledb.getData("/")).length
+            let label = slurs[l % slurs.length] + Math.floor(l/slurs.length)
+            server.connections[label] = new Turtle(ws, async ()=>await server.turtledb.getData("/"+label))
+            server.connections[label].ws.send(label)
+            console.log(server.connections)
+            let data:{[datatype:string]:number|string|(string|number)[][]} = omit(JSON.parse(datal[1]), "URL");
+            data.inventory = (JSON.parse(datal[2]) as Inventory).map((val)=>Object.keys(val).map((nestval)=>val[nestval]))
+            server.turtledb.push("/"+ label, data)
+          })(this)
           break;
         case "label":
-          this.connections[datal[1]].ws = ws
+          this.connections[datal[1]] = new Turtle(ws, async ()=>await this.turtledb.getData("/"+datal[1]))
           break
         case "status":
           this.connections[datal[1]].status = datal[2]
           break
         case "update":
+          if (datal[2] == "inventory"){
+            this.turtledb.push(`/${datal[1]}/${datal[2]}`, (JSON.parse(datal[3])[0] as Inventory).map((val)=>Object.keys(val).map((nestval)=>val[nestval])))
+          }
+          else{
+            this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0])
+          }
           break
         default:
           this.connections[datal[0]].returned.push(datal[1])
@@ -54,8 +70,6 @@ export default class TurtleServer{
 
   constructor(port: number){
     this.wss = new WebSocketServer({ port });
-
-    (async ()=>this.connections = await this.turtledb.getData("."))()
 
     this.wss.on('connection', (ws:typeof WebSocketServer)=>this.connection(ws))
   } 

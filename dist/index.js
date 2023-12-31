@@ -55,16 +55,25 @@ class TurtleServer {
         console.log(datal);
         switch (datal[0]) {
             case "No label":
-                this.connections[datal[1]] = new turtle_1.default(ws, omit(JSON.parse(datal[1]), "URL"));
-                this.turtledb.push("." + slurs[Object.keys(this.connections).length % slurs.length] + Math.floor(Object.keys(this.connections).length / slurs.length), this.connections[datal[1]]);
+                (function (server) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        let l = Object.keys(yield server.turtledb.getData("/")).length;
+                        let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
+                        server.connections[label] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield server.turtledb.getData("/" + label); }));
+                        server.connections[label].ws.send(label);
+                        console.log(server.connections);
+                        server.turtledb.push("/" + label, omit(JSON.parse(datal[1]), "URL"));
+                    });
+                })(this);
                 break;
             case "label":
-                this.connections[datal[1]].ws = ws;
+                this.connections[datal[1]] = new turtle_1.default(ws, () => __awaiter(this, void 0, void 0, function* () { return yield this.turtledb.getData("/" + datal[1]); }));
                 break;
             case "status":
                 this.connections[datal[1]].status = datal[2];
                 break;
             case "update":
+                this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
                 break;
             default:
                 this.connections[datal[0]].returned.push(datal[1]);
@@ -75,10 +84,9 @@ class TurtleServer {
         ws.on('message', (data) => this.message(data, ws));
     }
     constructor(port) {
-        this.turtledb = new node_json_db_1.JsonDB(new node_json_db_1.Config("./data/turtles.json", true, false, "."));
+        this.turtledb = new node_json_db_1.JsonDB(new node_json_db_1.Config("./data/turtles.json", true, false, "/"));
         this.connections = {};
         this.wss = new ws_1.WebSocketServer({ port });
-        (() => __awaiter(this, void 0, void 0, function* () { return this.connections = yield this.turtledb.getData("."); }))();
         this.wss.on('connection', (ws) => this.connection(ws));
     }
 }

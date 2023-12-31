@@ -1,28 +1,5 @@
 _G.json = require "json"
 
-_G.data = {saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
-
-function _G.data.init()
-  local datastring = fs.open("data.txt", "rb").readAll()
-  local it = 0
-  for s in datastring:gmatch("[^\n]+") do
-    it = it+1
-    if _G.data.datamap[2][_G.data.datamap[1][it]] == "string" then _G.data.saveddata[_G.data.datamap[1][it]] = s
-    elseif _G.data.datamap[2][_G.data.datamap[1][it]] == "number" then _G.data.saveddata[_G.data.datamap[1][it]] = tonumber(s) end
-  end
-end
-
-function _G.data.update(key, val)
-  _G.data.saveddata[key] = val
-  local datastring = ""
-  for _, key in ipairs(_G.data.datamap[1]) do
-    datastring = datastring .. _G.data.saveddata[key] .. "\n"
-  end
-  fs.open("data.txt", "wb").write(datastring:sub(1,-2))
-end
-
-
-
 local originalfwd = turtle.forward
 function turtle.forward()
   local succ, err = originalfwd()
@@ -92,11 +69,53 @@ function awaitconnect()
   return ws
 end
 
+function turtle.getInventory()
+    local inv = {}
+    for it=1,16 do
+        local item = turtle.getItemDetail(it)
+        if item then
+            table.insert(inv, turtle.getItemDetail(it))
+        else
+            table.insert(inv, {name="",count=0})
+        end
+    end
+    return inv
+end
+
+
+
+function data.init()
+  local datastring = fs.open("data.txt", "rb").readAll()
+  local it = 0
+  for s in datastring:gmatch("[^\n]+") do
+    it = it+1
+    if data.datamap[2][data.datamap[1][it]] == "string" then data.saveddata[data.datamap[1][it]] = s
+    elseif data.datamap[2][data.datamap[1][it]] == "number" then data.saveddata[data.datamap[1][it]] = tonumber(s) end
+  end
+end
+
+function data.update(key, val)
+  if key == "inventory" then
+    data.inventory = val
+    ws.send("update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode(val))
+  else
+    data.saveddata[key] = val
+    local datastring = ""
+    for _, key in ipairs(_G.data.datamap[1]) do
+      datastring = datastring .. _G.data.saveddata[key] .. "\n"
+    end
+    fs.open("data.txt", "wb").write(datastring:sub(1,-2))
+    ws.send("update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))
+  end
+end
+
+_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing"},{URL="string",x="number",y="number",z="number",facing="string"}}}
 
 
 
 
 if not fs.exists("startup.lua") then
+  shell.run("set motd.enable false")
   fs.copy("disk/json.lua", "json.lua")
   fs.copy("disk/startup.lua", "startup.lua")
   fs.copy("disk/data.txt", "data.txt")
@@ -107,7 +126,7 @@ if not fs.exists("startup.lua") then
     while ws == false do
       ws = http.websocket(data.saveddata.URL)
     end
-    ws.send("No label\n" .. json.encode(data.saveddata))
+    ws.send("No label\n" .. json.encode(data.saveddata) .. "\n" .. json.encode(data.inventory))
     os.setComputerLabel(ws.receive())
   end
   os.reboot()

@@ -6,23 +6,11 @@ export default class Turtle{
     ws:WebSocket
     returned:string[] = []
     status = ""
-    x=0
-    y=0
-    z=0
-    facing:Direction="North"
-    inventory = [
-        ["",0],["",0],["",0],["",0],
-        ["",0],["",0],["",0],["",0],
-        ["",0],["",0],["",0],["",0],
-        ["",0],["",0],["",0],["",0]
-    ]
-    equipment = ["",""]
+    datagetter:Function
     private waitingit = 0
-    constructor(ws:WebSocket, data:{[key:string]:never}){
-        for (let key in data){
-            this[key as keyof Turtle] = data[key]
-        }
+    constructor(ws:WebSocket, datagetter:Function){
         this.ws = ws
+        this.datagetter = datagetter
     }
 
     async receive(timeout_iteration?:number):Promise<any[]>{
@@ -51,28 +39,7 @@ export default class Turtle{
     */
     async moveForward(){
         this.ws.send(sendresponse("turtle.forward()"))
-        switch ((await this.receive(50))[0]){
-            case true:
-                switch (this.facing) {
-                    case "North":
-                        this.z-=1
-                        break;
-                    case "East":
-                        this.x+=1
-                        break;
-                    case "South":
-                        this.z+=1
-                        break;
-                    case "West":
-                        this.x-=1
-                        break;
-                }
-                return true
-            case false:
-                return false
-            default:
-                throw new Error("No response")
-        }
+        return await this.receive(50)
     }
 
     /** 
@@ -80,28 +47,7 @@ export default class Turtle{
     */
     async moveBackward(){
         this.ws.send(sendresponse("turtle.back()"))
-        switch ((await this.receive(50))[0]){
-            case true:
-                switch (this.facing) {
-                    case "North":
-                        this.z+=1
-                        break;
-                    case "East":
-                        this.x-=1
-                        break;
-                    case "South":
-                        this.z-=1
-                        break;
-                    case "West":
-                        this.x+=1
-                        break;
-                }
-                return true
-            case false:
-                return false
-            default:
-                throw new Error("No response")
-        }
+        return await this.receive(50)
     }
 
     /** 
@@ -109,15 +55,7 @@ export default class Turtle{
     */
     async moveUp(){
         this.ws.send(sendresponse("turtle.up()"))
-        switch ((await this.receive(50))[0]){
-            case true:
-                this.y+=1
-                return true
-            case false:
-                return false
-            default:
-                throw new Error("No response")
-        }
+        return await this.receive(50)
     }
 
     /** 
@@ -125,15 +63,7 @@ export default class Turtle{
     */
     async moveDown(){
         this.ws.send(sendresponse("turtle.down()"))
-        switch ((await this.receive(50))[0]){
-            case true:
-                this.y-=1
-                return true
-            case false: 
-                return false
-            default:
-                throw new Error("No response")
-        }
+        return await this.receive(50)
     }
 
     /** 
@@ -141,15 +71,7 @@ export default class Turtle{
     */
     async turnLeft(){
         this.ws.send(sendresponse("turtle.turnLeft()"))
-        switch ((await this.receive(50))[0]) {
-            case true:
-                this.facing = direction[direction.indexOf(this.facing)-1]
-                return true;
-            case false:
-                return false
-            default:
-                throw new Error("No response")
-        }
+        return await this.receive(50)
     }
 
     /** 
@@ -157,15 +79,7 @@ export default class Turtle{
     */
     async turnRight(){
         this.ws.send(sendresponse("turtle.turnRight()"))
-        switch ((await this.receive(50))[0]) {
-            case true:
-                this.facing = direction[direction.indexOf(this.facing)+1]
-                return true;
-            case false:
-                return false
-            default:
-                throw new Error("No response")
-        }
+        return await this.receive(50)
     }
 
     /** 
