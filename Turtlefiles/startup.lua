@@ -221,8 +221,11 @@ function turtle.equipLeft()
   local succ, err = originalequipleft()
   if succ then
     local equipment = _G.data.saveddata.equipment
-    equipment[1][1] = item.name
-    equipment[1][2] = 1
+    if item then
+      equipment[1] = {item.name, 1}
+    else
+      equipment[1] = {"",0}
+    end
     _G.data.update("equipment", equipment)
   end
   return succ, err
@@ -234,8 +237,11 @@ function turtle.equipRight()
   local succ, err = originalequipright()
   if succ then
     local equipment = _G.data.saveddata.equipment
-    equipment[2][1] = item.name
-    equipment[2][2] = 1
+    if item then
+      equipment[2] = {item.name, 1}
+    else
+      equipment[2] = {"",0}
+    end
     _G.data.update("equipment", equipment)
   end
   return succ, err
