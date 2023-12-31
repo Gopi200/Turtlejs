@@ -82,7 +82,7 @@ local originalturnleft = turtle.turnLeft
 function turtle.turnLeft()
   local succ, err = originalturnleft()
   if succ then
-    local tab = {North=function() _G.data.update("facing", "West") end, East=function() _G.data.update("facing", "North") end, South=function() _G.data.update("facing", "East") end, function() West=_G.data.update("facing", "South") end}
+    local tab = {North=function() _G.data.update("facing", "West") end, East=function() _G.data.update("facing", "North") end, South=function() _G.data.update("facing", "East") end, West= function() _G.data.update("facing", "South") end}
     tab[_G.data.saveddata.facing]()
   end
   return succ, err

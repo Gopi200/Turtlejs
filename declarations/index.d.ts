@@ -9,5 +9,8 @@ export default class TurtleServer {
     };
     private message;
     private connection;
+    getInventory(label: string): Promise<any>;
+    getEquipment(label: string): Promise<any>;
+    getLocation(label: string): Promise<any[]>;
     constructor(port: number);
 }

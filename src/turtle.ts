@@ -5,22 +5,10 @@ export default class Turtle{
     ws:WebSocket
     returned:string[] = []
     status = ""
-    inventory:Function
-    x:Function
-    y:Function
-    z:Function
-    equipment:Function
-    facing:Function
 
     private waitingit = 0
-    constructor(ws:WebSocket, label:string){
+    constructor(ws:WebSocket){
         this.ws = ws
-        this.inventory = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/inventory`)
-        this.x = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/x`)
-        this.y = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/y`)
-        this.z = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/z`)
-        this.equipment = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/equipment`)
-        this.facing = async (turtledb:JsonDB)=>turtledb.getData(`/${label}/facing`)
     }
 
     async receive(timeout_iteration?:number):Promise<any[]>{
