@@ -86,12 +86,15 @@ class TurtleServer {
                 break;
             case "update":
                 if (datal[2] == "inventory") {
-                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3][0]).map((val) => {
+                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3]).map((val) => {
                         let itemarr = Object.keys(val).map((nestval) => { if (nestval != "nbt") {
                             return val[nestval];
                         } });
                         if (itemarr[0] == null) {
                             itemarr.shift();
+                        }
+                        if (typeof itemarr[0] == "number") {
+                            itemarr.reverse();
                         }
                         return itemarr;
                     }));
