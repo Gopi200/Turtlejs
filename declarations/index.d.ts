@@ -12,5 +12,7 @@ export default class TurtleServer {
     getInventory(label: string): Promise<any>;
     getEquipment(label: string): Promise<any>;
     getLocation(label: string): Promise<any[]>;
+    getStatus(label: string): Promise<any>;
+    private statusawaiter;
     constructor(port: number);
 }

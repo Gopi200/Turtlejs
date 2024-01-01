@@ -262,6 +262,15 @@ function turtle.getInventory()
   return inv
 end
 
+function turtle.turnTo(direction)
+  local dir = {North=1,East=2,South=3,West=4}
+  local targetnum = dir[direction]
+  local curnum = dir[_G.data.saveddata.facing]
+  if curnum-targetnum == 3 then turtle.turnRight()
+  elseif curnum-targetnum >= 1 then turtle.turnLeft() end
+  if curnum-targetnum == 2 then turtle.turnLeft() end
+end
+
 
 
 function awaitconnect()
@@ -343,7 +352,7 @@ while true do
       local status, err = pcall(func)
       if err then
         _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring(err))
-      else _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring("done"))
+      else _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring("Waiting"))
       end
     end
   end

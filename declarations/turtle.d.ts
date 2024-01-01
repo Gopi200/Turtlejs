@@ -1,9 +1,9 @@
 export default class Turtle {
     ws: WebSocket;
     returned: string[];
-    status: string;
-    private waitingit;
-    constructor(ws: WebSocket);
+    statusawaiter: Function;
+    statusgetter: Function;
+    constructor(ws: WebSocket, statusawaiter: Function, statusgetter: Function);
     receive(timeout_iteration?: number): Promise<any[]>;
     /**
      * 	Craft a recipe based on the turtle's inventory. The turtle cannot contain any items other than the ones involved in the recipe.

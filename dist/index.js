@@ -59,7 +59,7 @@ class TurtleServer {
                     return __awaiter(this, void 0, void 0, function* () {
                         let l = Object.keys(yield server.turtledb.getData("/")).length;
                         let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
-                        server.connections[label] = new turtle_1.default(ws);
+                        server.connections[label] = new turtle_1.default(ws, (timeout) => __awaiter(this, void 0, void 0, function* () { return server.statusawaiter(label, timeout); }), () => __awaiter(this, void 0, void 0, function* () { return server.getStatus(label); }));
                         server.connections[label].ws.send(label);
                         let data = omit(JSON.parse(datal[1]), "URL");
                         data.inventory = JSON.parse(datal[2]).map((val) => {
@@ -74,15 +74,16 @@ class TurtleServer {
                             }
                             return itemarr;
                         });
+                        data.status = ["Waiting", ""];
                         server.turtledb.push("/" + label, data);
                     });
                 })(this);
                 break;
             case "label":
-                this.connections[datal[1]] = new turtle_1.default(ws);
+                this.connections[datal[1]] = new turtle_1.default(ws, (timeout) => __awaiter(this, void 0, void 0, function* () { return this.statusawaiter(datal[1], timeout); }), () => __awaiter(this, void 0, void 0, function* () { return this.getStatus(datal[1]); }));
                 break;
             case "status":
-                this.connections[datal[1]].status = datal[2];
+                this.turtledb.push(`/${datal[1]}/status`, [datal[2], "new"]);
                 break;
             case "update":
                 if (datal[2] == "inventory") {
@@ -119,6 +120,32 @@ class TurtleServer {
     }
     getLocation(label) {
         return __awaiter(this, void 0, void 0, function* () { let turtledata = yield this.turtledb.getData(`/${label}`); return [turtledata.x, turtledata.y, turtledata.z, turtledata.facing]; });
+    }
+    getStatus(label) {
+        return __awaiter(this, void 0, void 0, function* () { return this.turtledb.getData(`/${label}/status[0]`); });
+    }
+    statusawaiter(label, timeout_iteration) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var timed_out = false;
+            var waitingit = 0;
+            while ((yield this.turtledb.getData(`/${label}/status[1]`)) == "") {
+                if (timeout_iteration) {
+                    if (waitingit > timeout_iteration) {
+                        timed_out = true;
+                        break;
+                    }
+                }
+                yield new Promise(resolve => setTimeout(resolve, 100));
+                waitingit += 1;
+            }
+            if (timed_out) {
+                return "Timed out";
+            }
+            else {
+                this.turtledb.push(`/${label}/status[1]`, "");
+                return this.getStatus(label);
+            }
+        });
     }
     constructor(port) {
         this.turtledb = new node_json_db_1.JsonDB(new node_json_db_1.Config("./data/turtles.json", true, false, "/"));

@@ -4,24 +4,24 @@ import {JsonDB} from "node-json-db"
 export default class Turtle{
     ws:WebSocket
     returned:string[] = []
-    status = ""
-
-    private waitingit = 0
-    constructor(ws:WebSocket){
+    statusawaiter:Function
+    statusgetter:Function
+    constructor(ws:WebSocket, statusawaiter:Function, statusgetter:Function){
         this.ws = ws
+        this.statusawaiter = statusawaiter
+        this.statusgetter = statusgetter
     }
 
     async receive(timeout_iteration?:number):Promise<any[]>{
         var timed_out = false
+        var waitingit = 0
         while(this.returned.length == 0){
-            if (timeout_iteration) {if(this.waitingit>timeout_iteration){timed_out = true; break}}
+            if (timeout_iteration) {if(waitingit>timeout_iteration){timed_out = true; break}}
             await new Promise(resolve => setTimeout(resolve, 100))
-            this.waitingit+=1
+            waitingit+=1
         }
-        var temp=[]
-        this.waitingit = 0
         if (timed_out){return ["Timed out"]}
-        else{temp = JSON.parse(this.returned[0]); this.returned.shift(); return temp}
+        else{var temp = JSON.parse(this.returned[0]); this.returned.shift(); return temp}
     }
 
     /** 

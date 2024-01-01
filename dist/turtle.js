@@ -11,32 +11,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const defaults_1 = require("./defaults");
 class Turtle {
-    constructor(ws) {
+    constructor(ws, statusawaiter, statusgetter) {
         this.returned = [];
-        this.status = "";
-        this.waitingit = 0;
         this.ws = ws;
+        this.statusawaiter = statusawaiter;
+        this.statusgetter = statusgetter;
     }
     receive(timeout_iteration) {
         return __awaiter(this, void 0, void 0, function* () {
             var timed_out = false;
+            var waitingit = 0;
             while (this.returned.length == 0) {
                 if (timeout_iteration) {
-                    if (this.waitingit > timeout_iteration) {
+                    if (waitingit > timeout_iteration) {
                         timed_out = true;
                         break;
                     }
                 }
                 yield new Promise(resolve => setTimeout(resolve, 100));
-                this.waitingit += 1;
+                waitingit += 1;
             }
-            var temp = [];
-            this.waitingit = 0;
             if (timed_out) {
                 return ["Timed out"];
             }
             else {
-                temp = JSON.parse(this.returned[0]);
+                var temp = JSON.parse(this.returned[0]);
                 this.returned.shift();
                 return temp;
             }
