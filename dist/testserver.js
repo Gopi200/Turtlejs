@@ -36,4 +36,4 @@ const index_1 = __importStar(require("./index"));
 const server = new index_1.default(25565);
 setTimeout(function () {
     return __awaiter(this, void 0, void 0, function* () { console.log(yield (0, index_1.mine)(server.connections.Asshole0)); });
-}, 10000);
+}, 40000);

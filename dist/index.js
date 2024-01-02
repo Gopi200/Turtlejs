@@ -61,18 +61,7 @@ class TurtleServer {
                         let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
                         ws.send(label);
                         let data = omit(JSON.parse(datal[1]), "URL");
-                        data.inventory = JSON.parse(datal[2]).map((val) => {
-                            let itemarr = Object.keys(val).map((nestval) => { if (nestval != "nbt") {
-                                return val[nestval];
-                            } });
-                            if (itemarr[0] == null) {
-                                itemarr.shift();
-                            }
-                            if (typeof itemarr[0] == "number") {
-                                itemarr.reverse();
-                            }
-                            return itemarr;
-                        });
+                        data.inventory = JSON.parse(datal[2]);
                         data.status = ["Waiting", ""];
                         server.turtledb.push("/" + label, data);
                     });
@@ -85,23 +74,7 @@ class TurtleServer {
                 this.turtledb.push(`/${datal[1]}/status`, [datal[2], "new"]);
                 break;
             case "update":
-                if (datal[2] == "inventory") {
-                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3]).map((val) => {
-                        let itemarr = Object.keys(val).map((nestval) => { if (nestval != "nbt") {
-                            return val[nestval];
-                        } });
-                        if (itemarr[0] == null) {
-                            itemarr.shift();
-                        }
-                        if (typeof itemarr[0] == "number") {
-                            itemarr.reverse();
-                        }
-                        return itemarr;
-                    }));
-                }
-                else {
-                    this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
-                }
+                this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
                 break;
             case "error":
                 this.connections[datal[1]].error = datal[2];

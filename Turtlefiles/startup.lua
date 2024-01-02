@@ -307,7 +307,6 @@ end
 function _G.data.update(key, val)
   if key == "inventory" then
     _G.data.inventory = val
-    pcall(_G.ws.send, "update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode(val))
   else
     _G.data.saveddata[key] = val
     local datastring = ""
@@ -319,8 +318,8 @@ function _G.data.update(key, val)
       end
     end
     fs.open("data.txt", "wb").write(datastring:sub(1,-2))
-    pcall(ws.send, "update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))
   end
+  pcall(ws.send, "update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))
 end
 
 
