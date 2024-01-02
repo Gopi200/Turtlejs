@@ -13,6 +13,7 @@ const defaults_1 = require("./defaults");
 class Turtle {
     constructor(ws, statusawaiter, statusgetter) {
         this.returned = [];
+        this.error = "";
         this.ws = ws;
         this.statusawaiter = statusawaiter;
         this.statusgetter = statusgetter;

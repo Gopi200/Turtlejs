@@ -103,6 +103,9 @@ class TurtleServer {
                     this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0]);
                 }
                 break;
+            case "error":
+                this.connections[datal[1]].error = datal[2];
+                break;
             default:
                 this.connections[datal[0]].returned.push(datal[1]);
                 break;

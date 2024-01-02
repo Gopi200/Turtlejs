@@ -254,9 +254,9 @@ function turtle.getInventory()
   for it=1,16 do
       local item = turtle.getItemDetail(it)
       if item then
-          table.insert(inv, turtle.getItemDetail(it))
+          table.insert(inv, {item.name, item.count})
       else
-          table.insert(inv, {name="",count=0})
+          table.insert(inv, {"", 0})
       end
   end
   return inv
@@ -360,8 +360,8 @@ while true do
       local status, err = pcall(func)
       if err then
         awaitsend("error\n" .. os.getComputerLabel() .. "\n" .. tostring(err))
-      awaitsend("status\n" .. os.getComputerLabel() .. "\n" .. tostring("Waiting"))
       end
+      awaitsend("status\n" .. os.getComputerLabel() .. "\n" .. tostring("Waiting"))
     end
   end
 end

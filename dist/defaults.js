@@ -78,18 +78,20 @@ function mine(turtle, distance) {
             else
                 local dir = {North={"z", -1}, East={"x", 1}, South={"z", 1}, West={"x", -1}}
                 local it = _G.data.saveddata[dir[_G.data.saveddata.facing][1]] % 16
-                if dir[_G.data.saveddata.facing][2] == -1 then it = it*-1-1 end
+                if dir[_G.data.saveddata.facing][2] == -1 then it = it*-1+15 end
                 local connected = true
                 while true do
                     if it == 15 then
-                        if connection then
-                            ${(0, exports.sendstatus)("Mining")}
-                            local msg = ${exports.acceptmessage}
-                            if not msg then connection = false
-                            elseif msg == "stop" then break end
+                        if connected then
+                            connected = pcall(_G.ws.send, "status\\n" .. os.getComputerLabel() .. "\\n" .. "Mining")
+                            local _, msg = pcall(_G.ws.receive)
+                            if msg == "stop" then break end
                         else
                             _G.ws = http.websocket(_G.data.saveddata.URL)
-                            if ws then connection = true end
+                            if _G.ws then 
+                                connected = true 
+                                _G.ws.send("label\\n" .. os.getComputerLabel())
+                            end
                         end
                         it = -1
                     end
@@ -98,6 +100,7 @@ function mine(turtle, distance) {
                         turtle.dig()
                         moved = turtle.forward()
                     end
+                    it = it + 1
                     mine(nil, true)
                 end
             end
