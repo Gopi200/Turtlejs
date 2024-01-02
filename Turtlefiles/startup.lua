@@ -282,6 +282,13 @@ function awaitconnect()
   return ws
 end
 
+function awaitsend(msg)
+  if not pcall(_G.ws.send, msg) then
+    _G.ws = awaitconnect()
+  else return end
+  _G.ws.send(msg)
+end
+
 
 
 _G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing", "equipment"},{URL="string",x="number",y="number",z="number",facing="string",equipment="table"}}}
@@ -300,7 +307,7 @@ end
 function _G.data.update(key, val)
   if key == "inventory" then
     _G.data.inventory = val
-    ws.send("update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode(val))
+    pcall(_G.ws.send, "update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode(val))
   else
     _G.data.saveddata[key] = val
     local datastring = ""
@@ -312,7 +319,7 @@ function _G.data.update(key, val)
       end
     end
     fs.open("data.txt", "wb").write(datastring:sub(1,-2))
-    ws.send("update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))
+    pcall(ws.send, "update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))
   end
 end
 
@@ -340,9 +347,10 @@ end
 
 _G.data.init()
 _G.ws = awaitconnect()
+local message = nil
 while true do
-  local message = _G.ws.receive()
-  if message == nil then
+  local connected, message = pcall(_G.ws.receive)
+  if message == nil or connected == false then
     _G.ws = awaitconnect()
   else
     local func, err = load(message)
@@ -351,8 +359,8 @@ while true do
     elseif func then
       local status, err = pcall(func)
       if err then
-        _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring(err))
-      else _G.ws.send("status\n" .. os.getComputerLabel() .. "\n" .. tostring("Waiting"))
+        awaitsend("error\n" .. os.getComputerLabel() .. "\n" .. tostring(err))
+      awaitsend("status\n" .. os.getComputerLabel() .. "\n" .. tostring("Waiting"))
       end
     end
   end

@@ -34,8 +34,7 @@ export default class TurtleServer{
           (async function(server) {
             let l = Object.keys(await server.turtledb.getData("/")).length
             let label = slurs[l % slurs.length] + Math.floor(l/slurs.length)
-            server.connections[label] = new Turtle(ws, async (timeout?:number) => server.statusawaiter(label, timeout), async () => server.getStatus(label))
-            server.connections[label].ws.send(label)
+            ws.send(label)
             let data:{[datatype:string]:number|string|(string|number|undefined)[][]|string[]} = omit(JSON.parse(datal[1]), "URL");
             data.inventory = (JSON.parse(datal[2]) as Inventory).map((val)=>{
               let itemarr = Object.keys(val).map((nestval)=>{if (nestval!="nbt"){return val[nestval]}});
@@ -63,6 +62,9 @@ export default class TurtleServer{
           else{
             this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0])
           }
+          break
+        case "error":
+          this.connections[datal[1]].error = datal[2]
           break
         default:
           this.connections[datal[0]].returned.push(datal[1])

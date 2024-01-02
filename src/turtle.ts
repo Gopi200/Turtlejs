@@ -6,6 +6,7 @@ export default class Turtle{
     returned:string[] = []
     statusawaiter:Function
     statusgetter:Function
+    error = ""
     constructor(ws:WebSocket, statusawaiter:Function, statusgetter:Function){
         this.ws = ws
         this.statusawaiter = statusawaiter

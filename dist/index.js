@@ -59,8 +59,7 @@ class TurtleServer {
                     return __awaiter(this, void 0, void 0, function* () {
                         let l = Object.keys(yield server.turtledb.getData("/")).length;
                         let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
-                        server.connections[label] = new turtle_1.default(ws, (timeout) => __awaiter(this, void 0, void 0, function* () { return server.statusawaiter(label, timeout); }), () => __awaiter(this, void 0, void 0, function* () { return server.getStatus(label); }));
-                        server.connections[label].ws.send(label);
+                        ws.send(label);
                         let data = omit(JSON.parse(datal[1]), "URL");
                         data.inventory = JSON.parse(datal[2]).map((val) => {
                             let itemarr = Object.keys(val).map((nestval) => { if (nestval != "nbt") {
