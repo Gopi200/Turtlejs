@@ -45,7 +45,7 @@ function turtle.forward()
   local succ, err = originalfwd()
   if succ then
     local tab = {North=function() _G.data.update("z", _G.data.saveddata.z - 1) end, East=function() _G.data.update("x", _G.data.saveddata.x + 1) end, South=function() _G.data.update("z", _G.data.saveddata.z + 1) end, West=function() _G.data.update("x", _G.data.saveddata.x - 1) end}
-    tab[_G.data.saveddata.facing]()
+    tab[_G.data.saveddata.Facing]()
   end
   return succ, err
 end
@@ -55,7 +55,7 @@ function turtle.back()
   local succ, err = originalback()
   if succ then
     local tab = {North=function() _G.data.update("z", _G.data.saveddata.z + 1) end, East=function() _G.data.update("x", _G.data.saveddata.x - 1) end, South=function() _G.data.update("z", _G.data.saveddata.z - 1) end, West=function() _G.data.update("x", _G.data.saveddata.x + 1) end}
-    tab[_G.data.saveddata.facing]()
+    tab[_G.data.saveddata.Facing]()
   end
   return succ, err
 end
@@ -82,8 +82,8 @@ local originalturnleft = turtle.turnLeft
 function turtle.turnLeft()
   local succ, err = originalturnleft()
   if succ then
-    local tab = {North=function() _G.data.update("facing", "West") end, East=function() _G.data.update("facing", "North") end, South=function() _G.data.update("facing", "East") end, West= function() _G.data.update("facing", "South") end}
-    tab[_G.data.saveddata.facing]()
+    local tab = {North=function() _G.data.update("Facing", "West") end, East=function() _G.data.update("Facing", "North") end, South=function() _G.data.update("Facing", "East") end, West= function() _G.data.update("Facing", "South") end}
+    tab[_G.data.saveddata.Facing]()
   end
   return succ, err
 end
@@ -92,8 +92,8 @@ local originalturnright = turtle.turnRight
 function turtle.turnRight()
   local succ, err = originalturnright()
   if succ then
-    local tab = {North=function() _G.data.update("facing", "East") end, East=function() _G.data.update("facing", "South") end, South=function() _G.data.update("facing", "West") end, West=function() _G.data.update("facing", "North") end}
-    tab[_G.data.saveddata.facing]()
+    local tab = {North=function() _G.data.update("Facing", "East") end, East=function() _G.data.update("Facing", "South") end, South=function() _G.data.update("Facing", "West") end, West=function() _G.data.update("Facing", "North") end}
+    tab[_G.data.saveddata.Facing]()
   end
   return succ, err
 end
@@ -265,7 +265,7 @@ end
 function turtle.turnTo(direction)
   local dir = {North=1,East=2,South=3,West=4}
   local targetnum = dir[direction]
-  local curnum = dir[_G.data.saveddata.facing]
+  local curnum = dir[_G.data.saveddata.Facing]
   if curnum-targetnum == 3 then turtle.turnRight()
   elseif curnum-targetnum >= 1 then turtle.turnLeft() end
   if curnum-targetnum == 2 then turtle.turnLeft() end
