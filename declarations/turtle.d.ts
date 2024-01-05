@@ -4,6 +4,7 @@ export default class Turtle {
     statusawaiter: Function;
     statusgetter: Function;
     error: string;
+    status: string[];
     constructor(ws: WebSocket, statusawaiter: Function, statusgetter: Function);
     receive(timeout_iteration?: number): Promise<any[]>;
     /**

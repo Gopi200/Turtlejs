@@ -3,6 +3,25 @@ import {default as Turtle} from "./turtle"
 export * from "./defaults"
 import fs from "fs"
 import { JsonDB, Config } from "node-json-db"
+import { createConnection } from "mysql"
+
+const sqlconn = createConnection({
+  host: "84.105.126.31",
+  user: "default",
+  password: "TR8qiK%Zf@Spy*iBvg$2",
+  database: "turtlejs"
+});
+
+sqlconn.connect(function(err:Error) {
+  if (err) {
+    console.error('error connecting: ' + err.stack);
+    return;
+  }
+ 
+  console.log('connected as id ' + sqlconn.threadId);
+});
+
+sqlconn.query(`DELETE FROM Turtles`)
 
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
 
@@ -12,14 +31,6 @@ try {fs.writeFileSync("./data/turtles.json", "{}", { flag: 'wx' },  (err:Error) 
     console.log(err)
   }
 });} catch {}
-
-function omit<T extends object, K extends keyof T>(obj: T, key: K): Omit<T, K> {
-  const o: Omit<T, K> & Partial<Pick<T, K>> = { ...obj };
-  delete o[key];
-  return o;
-}
-
-type Inventory = {[key:string]:string|number}[]
 
 export default class TurtleServer{
   turtledb = new JsonDB(new Config("./data/turtles.json", true, false, "/"))
@@ -31,15 +42,15 @@ export default class TurtleServer{
       console.log(datal)
       switch (datal[0]) {
         case "No label":
-          (async function(server) {
-            let l = Object.keys(await server.turtledb.getData("/")).length
-            let label = slurs[l % slurs.length] + Math.floor(l/slurs.length)
+          sqlconn.query(`SELECT COUNT(*) FROM Turtles`, function(err:Error, results:any, fields:any) {
+            if (err) {console.error(err)}
+            let label = slurs[results[0]["COUNT(*)"] % slurs.length] + Math.floor(results[0]["COUNT(*)"]/slurs.length)
             ws.send(label)
-            let data:{[datatype:string]:number|string|Inventory|string[]} = omit(JSON.parse(datal[1]), "URL");
-            data.inventory = JSON.parse(datal[2]) as Inventory
+            let data = JSON.parse(datal[1])
+            data.inventory = JSON.parse(datal[2])
+            sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP) VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${data.Equipment}', '${data.inventory}', ${data.ServerIP})`)
             data.status = ["Waiting", ""]
-            server.turtledb.push("/"+ label, data)
-          })(this)
+          })
           break;
         case "label":
           this.connections[datal[1]] = new Turtle(ws, async (timeout?:number) => this.statusawaiter(datal[1], timeout), async () => this.getStatus(datal[1]))

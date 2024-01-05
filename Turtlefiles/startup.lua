@@ -291,7 +291,7 @@ end
 
 
 
-_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "facing", "equipment"},{URL="string",x="number",y="number",z="number",facing="string",equipment="table"}}}
+_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "Facing", "ServerIP", "OwnerID", "Equipment"},{URL="string",x="number",y="number",z="number",Facing="string",IP="string",OwnerID="number",Equipment="table"}}}
 
 function _G.data.init()
   local datastring = fs.open("data.txt", "rb").readAll()

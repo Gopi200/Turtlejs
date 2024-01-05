@@ -31,6 +31,21 @@ const turtle_1 = __importDefault(require("./turtle"));
 __exportStar(require("./defaults"), exports);
 const fs_1 = __importDefault(require("fs"));
 const node_json_db_1 = require("node-json-db");
+const mysql_1 = require("mysql");
+const sqlconn = (0, mysql_1.createConnection)({
+    host: "84.105.126.31",
+    user: "default",
+    password: "TR8qiK%Zf@Spy*iBvg$2",
+    database: "turtlejs"
+});
+sqlconn.connect(function (err) {
+    if (err) {
+        console.error('error connecting: ' + err.stack);
+        return;
+    }
+    console.log('connected as id ' + sqlconn.threadId);
+});
+sqlconn.query(`DELETE FROM Turtles`);
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"];
 try {
     fs_1.default.mkdirSync("./data");
@@ -44,28 +59,25 @@ try {
     });
 }
 catch (_b) { }
-function omit(obj, key) {
-    const o = Object.assign({}, obj);
-    delete o[key];
-    return o;
-}
 class TurtleServer {
     message(data, ws) {
         let datal = data.toString().split("\n");
         console.log(datal);
         switch (datal[0]) {
             case "No label":
-                (function (server) {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        let l = Object.keys(yield server.turtledb.getData("/")).length;
-                        let label = slurs[l % slurs.length] + Math.floor(l / slurs.length);
-                        ws.send(label);
-                        let data = omit(JSON.parse(datal[1]), "URL");
-                        data.inventory = JSON.parse(datal[2]);
-                        data.status = ["Waiting", ""];
-                        server.turtledb.push("/" + label, data);
-                    });
-                })(this);
+                sqlconn.query(`SELECT COUNT(*) FROM Turtles`, function (err, results, fields) {
+                    if (err) {
+                        console.error(err);
+                    }
+                    let label = slurs[results[0]["COUNT(*)"] % slurs.length] + Math.floor(results[0]["COUNT(*)"] / slurs.length);
+                    console.log(label);
+                    console.log(results[0]["COUNT(*)"]);
+                    ws.send(label);
+                    let data = JSON.parse(datal[1]);
+                    data.inventory = JSON.parse(datal[2]);
+                    sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP) VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${data.Equipment}', '${data.inventory}', ${data.ServerIP})`);
+                    data.status = ["Waiting", ""];
+                });
                 break;
             case "label":
                 this.connections[datal[1]] = new turtle_1.default(ws, (timeout) => __awaiter(this, void 0, void 0, function* () { return this.statusawaiter(datal[1], timeout); }), () => __awaiter(this, void 0, void 0, function* () { return this.getStatus(datal[1]); }));

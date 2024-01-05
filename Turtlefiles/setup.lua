@@ -16,6 +16,10 @@ else
     wfile.write(io.stdin:read() .. "\n")
     print("Which direction am I facing?")
     wfile.write(io.stdin:read() .. "\n")
+    print("What is the server IP?")
+    wfile.write(io.stdin:read() .. "\n")
+    print("What is my owner's ID?")
+    wfile.write(io.stdin:read() .. "\n")
     wfile.write("{{\"\",0},{\"\",0}}")
     wfile.close()
 end
