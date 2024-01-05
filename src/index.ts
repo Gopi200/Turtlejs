@@ -46,9 +46,10 @@ export default class TurtleServer{
           sqlconn.query(`SELECT COUNT(*) FROM Turtles`, (err:Error, results:any, fields:any) => {
             if (err) {console.error(err); return}
             let label = slurs[results[0]["COUNT(*)"] % slurs.length] + Math.floor(results[0]["COUNT(*)"]/slurs.length)
-            ws.send(`[${label}, ${results[0]["COUNT(*)"]+1}]`)
+            ws.send(`["${label}", ${results[0]["COUNT(*)"]+1}]`)
             let data = JSON.parse(datal[1])
-            sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP) VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${datal[2]}', '${data.ServerIP}')`)
+            sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP)
+            VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${datal[2]}', '${data.ServerIP}')`);
           })
           sqlconn.query(`SELECT * FROM Turtles WHERE TurtleID=1`, function(err:Error, results:any, fields:any) {(async () => {console.log(results)})()})
           break;
@@ -59,7 +60,9 @@ export default class TurtleServer{
           this.turtledb.push(`/${datal[1]}/status`, [datal[2], "new"])
           break
         case "update":
-          this.turtledb.push(`/${datal[1]}/${datal[2]}`, JSON.parse(datal[3])[0])
+          sqlconn.query(`UPDATE Turtles
+          SET ${datal[2]} = '${JSON.parse(datal[3])}'
+          WHERE TurtleID = ${+datal[1]}`)
           break
         case "error":
           this.connections[datal[1]].error = datal[2]

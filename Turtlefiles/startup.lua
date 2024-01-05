@@ -102,7 +102,7 @@ local originaldig = turtle.dig
 function turtle.dig(side)
   local succ, err = originaldig(side)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -111,7 +111,7 @@ local originaldigup = turtle.digUp
 function turtle.digUp(side)
   local succ, err = originaldigup(side)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -120,7 +120,7 @@ local originaldigdown = turtle.digDown
 function turtle.digDown(side)
   local succ, err = originaldigdown(side)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -129,7 +129,7 @@ local originalplace = turtle.place
 function turtle.place(text)
   local succ, err = originalplace(text)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -138,7 +138,7 @@ local originalplaceup = turtle.placeUp
 function turtle.placeUp(text)
   local succ, err = originalplaceup(text)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -147,7 +147,7 @@ local originalplacedown = turtle.placeDown
 function turtle.placeDown(text)
   local succ, err = originalplacedown(side)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -156,7 +156,7 @@ local originaldrop = turtle.drop
 function turtle.drop(count)
   local succ, err = originaldrop(count)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -165,7 +165,7 @@ local originaldropup = turtle.dropUp
 function turtle.dropUp(count)
   local succ, err = originaldropup(count)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -174,7 +174,7 @@ local originaldropdown = turtle.dropDown
 function turtle.dropDown(count)
   local succ, err = originaldropdown(count)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -183,7 +183,7 @@ local originalsuck = turtle.suck
 function turtle.suck(count)
   local succ, err = originalsuck(count)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -192,7 +192,7 @@ local originalsuckup = turtle.suckUp
 function turtle.suckUp(count)
   local succ, err = originalsuckup(count)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -201,7 +201,7 @@ local originalsuckdown = turtle.suckDown
 function turtle.suckDown(count)
   local succ, err = originalsuckdown(count)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -210,7 +210,7 @@ local originaltransferto = turtle.transferTo
 function turtle.transferTo(slot, count)
   local succ, err = originaltransferto(slot, count)
   if succ then
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -227,7 +227,7 @@ function turtle.equipLeft()
       equipment[1] = {"",0}
     end
     _G.data.update("equipment", equipment)
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -244,7 +244,7 @@ function turtle.equipRight()
       equipment[2] = {"",0}
     end
     _G.data.update("equipment", equipment)
-    _G.data.update("inventory", turtle.getInventory())
+    _G.data.update("Inventory", turtle.getInventory())
   end
   return succ, err
 end
@@ -291,7 +291,7 @@ end
 
 
 
-_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "Facing", "ServerIP", "OwnerID", "Equipment", "TurtleID"},{URL="string",x="number",y="number",z="number",Facing="string",ServerIP="string",OwnerID="number",Equipment="table",TurtleID="number"}}}
+_G.data = {Inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "Facing", "ServerIP", "OwnerID", "Equipment", "TurtleID"},{URL="string",x="number",y="number",z="number",Facing="string",ServerIP="string",OwnerID="number",Equipment="table",TurtleID="number"}}}
 
 function _G.data.init()
   local datastring = fs.open("data.txt", "rb").readAll()
@@ -305,8 +305,8 @@ function _G.data.init()
 end
 
 function _G.data.update(key, val)
-  if key == "inventory" then
-    _G.data.inventory = val
+  if key == "Inventory" then
+    _G.data.Inventory = val
   else
     _G.data.saveddata[key] = val
     local datastring = ""
@@ -319,7 +319,7 @@ function _G.data.update(key, val)
     end
     fs.open("data.txt", "wb").write(datastring:sub(1,-2))
   end
-  pcall(ws.send, "update\n"..os.getComputerLabel() .. "\n" .. key .. "\n" .. json.encode({val}))
+  pcall(ws.send, "update\n".. _G.data.saveddata.TurtleID .. "\n" .. key .. "\n" .. json.encode(val))
 end
 
 
@@ -336,7 +336,7 @@ if not fs.exists("startup.lua") then
     while ws == false do
       ws = http.websocket(data.saveddata.URL)
     end
-    ws.send("No label\n" .. json.encode(data.saveddata) .. "\n" .. json.encode(data.inventory))
+    ws.send("No label\n" .. json.encode(data.saveddata) .. "\n" .. json.encode(data.Inventory))
     local setup = json.decode(ws.receive())
     os.setComputerLabel(setup[1])
     fs.open("data.txt", "a").write("\n"..setup[2])
