@@ -77,8 +77,8 @@ function mine(turtle, distance) {
                 end
             else
                 local dir = {North={"z", -1}, East={"x", 1}, South={"z", 1}, West={"x", -1}}
-                local it = _G.data.saveddata[dir[_G.data.saveddata.facing][1]] % 16
-                if dir[_G.data.saveddata.facing][2] == -1 then it = it*-1+15 end
+                local it = _G.data.saveddata[dir[_G.data.saveddata.Facing][1]] % 16
+                if dir[_G.data.saveddata.Facing][2] == -1 then it = it*-1+15 end
                 local connected = true
                 while true do
                     if it == 15 then
