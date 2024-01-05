@@ -22,6 +22,7 @@ sqlconn.connect(function(err:Error) {
 });
 
 sqlconn.query(`DELETE FROM Turtles`)
+sqlconn.query(`ALTER TABLE Turtles AUTO_INCREMENT=1`)
 
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"]
 
@@ -42,15 +43,14 @@ export default class TurtleServer{
       console.log(datal)
       switch (datal[0]) {
         case "No label":
-          sqlconn.query(`SELECT COUNT(*) FROM Turtles`, function(err:Error, results:any, fields:any) {
-            if (err) {console.error(err)}
+          sqlconn.query(`SELECT COUNT(*) FROM Turtles`, (err:Error, results:any, fields:any) => {
+            if (err) {console.error(err); return}
             let label = slurs[results[0]["COUNT(*)"] % slurs.length] + Math.floor(results[0]["COUNT(*)"]/slurs.length)
-            ws.send(label)
+            ws.send(`[${label}, ${results[0]["COUNT(*)"]+1}]`)
             let data = JSON.parse(datal[1])
-            data.inventory = JSON.parse(datal[2])
-            sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP) VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${data.Equipment}', '${data.inventory}', ${data.ServerIP})`)
-            data.status = ["Waiting", ""]
+            sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP) VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${datal[2]}', '${data.ServerIP}')`)
           })
+          sqlconn.query(`SELECT * FROM Turtles WHERE TurtleID=1`, function(err:Error, results:any, fields:any) {(async () => {console.log(results)})()})
           break;
         case "label":
           this.connections[datal[1]] = new Turtle(ws, async (timeout?:number) => this.statusawaiter(datal[1], timeout), async () => this.getStatus(datal[1]))

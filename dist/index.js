@@ -46,6 +46,7 @@ sqlconn.connect(function (err) {
     console.log('connected as id ' + sqlconn.threadId);
 });
 sqlconn.query(`DELETE FROM Turtles`);
+sqlconn.query(`ALTER TABLE Turtles AUTO_INCREMENT=1`);
 const slurs = ["Asshole", "Baboon", "Clown", "Dickhead", "Egghead", "Fuckface", "Geezer", "Hick", "Idiot", "Jerk", "Kid", "Loser", "Meathead", "Nerd", "Old-timer", "Parasite", "Quack", "Retard", "Scumbag", "Turd", "Useless", "Vegetable", "Wanker", "Xanbie", "Yeti", "Zob"];
 try {
     fs_1.default.mkdirSync("./data");
@@ -65,19 +66,17 @@ class TurtleServer {
         console.log(datal);
         switch (datal[0]) {
             case "No label":
-                sqlconn.query(`SELECT COUNT(*) FROM Turtles`, function (err, results, fields) {
+                sqlconn.query(`SELECT COUNT(*) FROM Turtles`, (err, results, fields) => {
                     if (err) {
                         console.error(err);
+                        return;
                     }
                     let label = slurs[results[0]["COUNT(*)"] % slurs.length] + Math.floor(results[0]["COUNT(*)"] / slurs.length);
-                    console.log(label);
-                    console.log(results[0]["COUNT(*)"]);
-                    ws.send(label);
+                    ws.send(`[${label}, ${results[0]["COUNT(*)"] + 1}]`);
                     let data = JSON.parse(datal[1]);
-                    data.inventory = JSON.parse(datal[2]);
-                    sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP) VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${data.Equipment}', '${data.inventory}', ${data.ServerIP})`);
-                    data.status = ["Waiting", ""];
+                    sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP) VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${datal[2]}', '${data.ServerIP}')`);
                 });
+                sqlconn.query(`SELECT * FROM Turtles WHERE TurtleID=1`, function (err, results, fields) { (() => __awaiter(this, void 0, void 0, function* () { console.log(results); }))(); });
                 break;
             case "label":
                 this.connections[datal[1]] = new turtle_1.default(ws, (timeout) => __awaiter(this, void 0, void 0, function* () { return this.statusawaiter(datal[1], timeout); }), () => __awaiter(this, void 0, void 0, function* () { return this.getStatus(datal[1]); }));

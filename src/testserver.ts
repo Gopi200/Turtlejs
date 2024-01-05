@@ -1,7 +1,7 @@
 import {default as TurtleServer, mine} from "./index"
 
 const server = new TurtleServer(25565)
-setTimeout(async function() {server.connections.Baboon0.ws.send(`
+/*setTimeout(async function() {server.connections.Baboon0.ws.send(`
 function testore(blockdata)
     for _, value in pairs(blockdata.tags) do
         if value == "minecraft:block/forge:ores" then return true end
@@ -17,4 +17,4 @@ for i=#x, 1, -1 do
 end
 ws.send("Baboon0\\n"..json.encode(x))
 local automata = peripheral.wrap("left")
-automata.digBlock("up")`)},5000)
+automata.digBlock("up")`)},5000) */

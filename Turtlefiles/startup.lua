@@ -291,7 +291,7 @@ end
 
 
 
-_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "Facing", "ServerIP", "OwnerID", "Equipment"},{URL="string",x="number",y="number",z="number",Facing="string",IP="string",OwnerID="number",Equipment="table"}}}
+_G.data = {inventory = turtle.getInventory(), saveddata = {}, datamap = {{"URL", "x", "y", "z", "Facing", "ServerIP", "OwnerID", "Equipment", "TurtleID"},{URL="string",x="number",y="number",z="number",Facing="string",ServerIP="string",OwnerID="number",Equipment="table",TurtleID="number"}}}
 
 function _G.data.init()
   local datastring = fs.open("data.txt", "rb").readAll()
@@ -337,7 +337,9 @@ if not fs.exists("startup.lua") then
       ws = http.websocket(data.saveddata.URL)
     end
     ws.send("No label\n" .. json.encode(data.saveddata) .. "\n" .. json.encode(data.inventory))
-    os.setComputerLabel(ws.receive())
+    local setup = json.decode(ws.receive())
+    os.setComputerLabel(setup[1])
+    fs.open("data.txt", "a").write("\n"..setup[2])
   end
   os.reboot()
 end
