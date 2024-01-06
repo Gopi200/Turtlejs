@@ -1,10 +1,11 @@
-import {default as TurtleServer, mine} from "./index"
+import {default as TurtleServer} from "./index.js"
+import {mine} from "../Userdata/default.js"
 import fs from "fs"
 
 fs.writeFileSync("./Balls.js", `console.log("Hoohoo")`, )
 
 const server = new TurtleServer(25565)
-setTimeout(async function() {mine(server.connections[1])},10000)
+//setTimeout(async function() {mine(server.connections[1])},10000)
 
 /* `function testore(blockdata)
     for _, value in pairs(blockdata.tags) do

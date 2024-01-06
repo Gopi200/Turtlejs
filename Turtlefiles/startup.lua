@@ -336,7 +336,7 @@ if not fs.exists("startup.lua") then
     while ws == false do
       ws = http.websocket(data.saveddata.URL)
     end
-    ws.send("No label\n" .. json.encode(data.saveddata) .. "\n" .. json.encode(data.Inventory))
+    ws.send("New\nTurtle\n" .. json.encode(data.saveddata) .. "\n" .. json.encode(data.Inventory))
     local setup = json.decode(ws.receive())
     os.setComputerLabel(setup[1])
     fs.open("data.txt", "a").write("\n"..setup[2])

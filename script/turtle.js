@@ -1,6 +1,3 @@
-import { sendresponse} from "./defaults"
-import {JsonDB} from "node-json-db"
-
 export default class Turtle{
     ws
     returned = []

@@ -1,11 +1,16 @@
 import {WebSocketServer} from "ws"
-import {default as Turtle} from "./turtle"
-export * from "./defaults"
+import {default as Turtle} from "./turtle.js"
 import fs from "fs"
-import { JsonDB, Config } from "node-json-db"
 import { createConnection } from "mysql"
+import * as dotenv from "dotenv"
+dotenv.config()
 
 const sqlconn = createConnection({
+    host: process.env.sql_host,
+    port: process.env.sql_port,
+    user: process.env.sql_user,
+    password: process.env.sql_password,
+    database: process.env.sql_database
 });
 
 sqlconn.connect(function(err) {
@@ -29,10 +34,7 @@ try {fs.writeFileSync("./data/turtles.json", "{}", { flag: 'wx' },  (err) => {
   }
 });} catch {}
 
-
-
 export default class TurtleServer{
-    turtledb = new JsonDB(new Config("./data/turtles.json", true, false, "/"))
     wss;
     connections = {}
 
@@ -40,16 +42,26 @@ export default class TurtleServer{
         let datal = data.toString().split("\n")
         console.log(datal)
             switch (datal[0]) {
-                case "No label":
-                    sqlconn.query(`SELECT COUNT(*) FROM Turtles`, (err, results, fields) => {
-                        if (err) {console.error(err); return}
-                        let label = slurs[results[0]["COUNT(*)"] % slurs.length] + Math.floor(results[0]["COUNT(*)"]/slurs.length)
-                        ws.send(`["${label}", ${results[0]["COUNT(*)"]+1}]`)
-                        let data = JSON.parse(datal[1])
-                        sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP)
-                        VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${datal[2]}', '${data.ServerIP}')`);
-                    })
-                    sqlconn.query(`SELECT * FROM Turtles WHERE TurtleID=1`, function(err, results, fields) {(async () => {console.log(results)})()})
+                case "New":
+                    switch (datal[1]){
+                        case "Turtle":
+                            sqlconn.query(`SELECT COUNT(*) FROM Turtles`, (err, results, fields) => {
+                                if (err) {console.error(err); return}
+                                let label = slurs[results[0]["COUNT(*)"] % slurs.length] + Math.floor(results[0]["COUNT(*)"]/slurs.length)
+                                ws.send(`["${label}", ${results[0]["COUNT(*)"]+1}]`)
+                                let data = JSON.parse(datal[1])
+                                sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP)
+                                VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${datal[2]}', '${data.ServerIP}')`);
+                            })
+                            sqlconn.query(`SELECT * FROM Turtles WHERE TurtleID=1`, function(err, results, fields) {(async () => {console.log(results)})()})
+                            break
+                        case "User":
+                            fs.mkdirSync("./Userscripts/"+datal[2])
+                            break
+                        default:
+                            ws.send("New what?")
+                            break
+                    }
                     break;
                 case "Turtleconn":
                     this.connections[+datal[1]] = new Turtle(ws)
@@ -76,10 +88,6 @@ export default class TurtleServer{
     connection(ws){
         ws.on('message', (data)=>this.message(data,ws))
     }
-
-    async getInventory(label){return this.turtledb.getData(`/${label}/inventory`)}
-    async getEquipment(label){return this.turtledb.getData(`/${label}/equipment`)}
-    async getLocation(label){let turtledata = await this.turtledb.getData(`/${label}`); return [turtledata.x, turtledata.y, turtledata.z, turtledata.facing]}
 
     constructor(port){
         this.wss = new WebSocketServer({ port });
