@@ -278,7 +278,7 @@ function awaitconnect()
   while ws == false do
     ws = http.websocket(_G.data.saveddata.URL)
   end
-  ws.send("label\n" .. os.getComputerLabel())
+  ws.send("Turtleconn\n" .. _G.data.saveddata.TurtleID)
   return ws
 end
 
@@ -311,7 +311,7 @@ function _G.data.update(key, val)
     _G.data.saveddata[key] = val
     local datastring = ""
     for _, key in ipairs(_G.data.datamap[1]) do
-      if key == "equipment" then
+      if key == "Equipment" then
         datastring = datastring .. table.tostring(_G.data.saveddata[key]) .. "\n"
       else
         datastring = datastring .. _G.data.saveddata[key] .. "\n"
@@ -356,13 +356,13 @@ while true do
   else
     local func, err = load(message)
     if err then
-      _G.ws.send("status\n" .. os.getComputerLabel() .. "\nCompilation error: " .. err)
+      _G.ws.send("error\n" .. _G.data.saveddata.TurtleID .. "\nCompilation error: " .. err)
     elseif func then
       local status, err = pcall(func)
       if err then
-        awaitsend("error\n" .. os.getComputerLabel() .. "\n" .. tostring(err))
+        awaitsend("error\n" .. _G.data.saveddata.TurtleID .. "\n" .. tostring(err))
       end
-      awaitsend("status\n" .. os.getComputerLabel() .. "\n" .. tostring("Waiting"))
+      awaitsend("status\n" .. _G.data.saveddata.TurtleID .. "\n" .. tostring("Waiting"))
     end
   end
 end
