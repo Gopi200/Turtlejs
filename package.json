@@ -7,7 +7,7 @@
   "author": "Gopi200 <61714236+Gopi200@users.noreply.github.com>",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.1",
     "mysql": "^2.18.1",
     "ws": "^8.16.0"
   },

@@ -3,7 +3,7 @@ import * as http from "node:http";
 const requests = {"Authorize": true};
 
 const url = new URL("http://localhost:8080/turtles")
-const headers = Object({"auth": ":"});
+const headers = Object({"auth": "Dewinz:P@ssw0rd"});
 
 if (requests["Authorize"]) {
     http.get(url, headers, (res) => {

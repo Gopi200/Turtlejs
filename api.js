@@ -1,23 +1,16 @@
 // import {WebSocketServer} from "ws";
 import * as http from "node:http";
 import * as mysql from "mysql";
+import { config } from "dotenv";
+config();
 
-const useHttpAPI = true;
-const httpURL = "";
-const httpPORT = 0;
-
-const useMysql = true;
-const mysqlURL = "";
-const mysqlPORT = 0;
-
-
-if (useMysql) {
+if (process.env.api_use_sql == "true") {
     var mysqlConn = mysql.createConnection({
-        host: mysqlURL,
-        port: mysqlPORT,
-        user: "",
-        password: "",
-        database: ""
+        host: process.env.api_sql_host,
+        port: process.env.api_sql_port,
+        user: process.env.api_sql_user,
+        password: process.env.api_sql_password,
+        database: process.env.api_sql_database
     });
     mysqlConn.connect((error) => {
         if (error) { throw error; }
@@ -25,10 +18,7 @@ if (useMysql) {
     });
 }
 
-if (useHttpAPI) {
-    if (typeof httpPORT != "number") {
-        throw new Error("httpPORT is not defined or not a number!");
-    }
+if (process.env.api_use_http == "true") {
     const httpAPI = http.createServer(async (req, res) => {
         console.log(`Requested at: ${req.url}`);
 
@@ -64,9 +54,9 @@ if (useHttpAPI) {
                 break;
         }
 
-    }).listen(httpPORT);
+    }).listen(process.env.api_http_port);
 
-    console.log(`httpAPI is listening at 127.0.0.1:${httpPORT}`);
+    console.log(`httpAPI is listening at 127.0.0.1:${process.env.api_http_port}`);
 }
 
 /**
