@@ -52,12 +52,6 @@ if (process.env.api_use_http == "true") {
                 });
                 res.end();
                 break;
-            case req.url.match(/^\/turtles\/?(?=$)/i) != null:
-
-                break;
-            case req.url.match(/^\/turtles\/?(?=$)/i) != null:
-
-                break;
             default:
                 // Matches for the first items in a url.
                 var search = req.url.match(/(?<=^\/).+?(?=\/|$)/)[0];
@@ -121,18 +115,18 @@ async function authorizeClient(auth) {
         // Checks what authentication was used and decodes the message.
         switch (true) {
             case auth.substring(0, 5) == "Basic":
+                console.log(auth)
                 var result = atob(auth.substring(6));
                 break;
             default:
                 console.log("400: Wrong authorization encoding given.");
                 return [400];
         }
-        // Verifies if the user exists.
         var user = /^.+?(?=:)/.exec(result)[0];
-        var password = /(?<=:).+?($|\s)/.exec(result)[0];
-        var passwordMatch = await mysqlQuery(user, "users", ["Password"]);
+        var apikey = /(?<=:).+?($|\s)/.exec(result)[0];
+        var apikeyMatch = await mysqlQuery(user, "users", ["APIKey"]);
         
-        if (password === passwordMatch[0][0]) {
+        if (apikey === apikeyMatch[0][0]) {
             console.log("200: Authorization successful.");
             return [200, user];
         }
