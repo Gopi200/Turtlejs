@@ -28,19 +28,23 @@ if (process.env.api_use_http == "true") {
 
         // console.log(`With authorization ${interpreted_auth}`)
 
-        if (clientAuthorization != 200) {
-            res.writeHead(clientAuthorization);
+        if (clientAuthorization[0] != 200) {
+            res.writeHead(clientAuthorization[0]);
             res.end();
             return;
         }
 
-        switch (req.url) {
-            case "/":
+        /* 
+        *  TODO { Review and possibly amend code }
+        *  I don't know enough about how this compiles to say if this is the most efficient it can be.
+        */
+        switch (true) {
+            case req.url == "/":
                 res.writeHead(200);
                 res.end();
                 break;
-            case "/turtles":
-                var turtles = await mysqlQuery("Dewinz", "turtles", "TurtleName");
+            case req.url.match(/^\/turtles\/?(?=$)/i) != null:
+                var turtles = await mysqlQuery(clientAuthorization[1], "turtles", ["TurtleName"]);
                 console.log(turtles);
                 res.writeHead(200)
                 res.write(JSON.stringify(turtles), (error) => {
@@ -48,10 +52,54 @@ if (process.env.api_use_http == "true") {
                 });
                 res.end();
                 break;
-            default:
-                res.writeHead(404, "Not found");
-                res.end();
+            case req.url.match(/^\/turtles\/?(?=$)/i) != null:
+
                 break;
+            case req.url.match(/^\/turtles\/?(?=$)/i) != null:
+
+                break;
+            default:
+                // Matches for the first items in a url.
+                var search = req.url.match(/(?<=^\/).+?(?=\/|$)/)[0];
+                var turtles = await mysqlQuery(clientAuthorization[1], "turtles", ["TurtleName"]);
+                var turtle = turtles.find((element) => { return element[0].toLowerCase() == search.toLowerCase()});
+                if (turtle) {
+                    switch (true) {
+                        case req.url.match(/(?<=.\/)inventory(?!\/.)/i) != null:
+                            res.writeHead(200);
+                            var inventory = await mysqlQuery(clientAuthorization[1], "turtles", ["Inventory"]);
+                            res.write(JSON.stringify(inventory[0]), (error) => {
+                                if (error) { console.log(error); }
+                            });
+                            res.end();
+                            break;
+                        case req.url.match(/(?<=.\/)equipment(?!\/.)/i) != null:
+                            res.writeHead(200);
+                            var equipment = await mysqlQuery(clientAuthorization[1], "turtles", ["Equipment"]);
+                            res.write(JSON.stringify(equipment[0]), (error) => {
+                                if (error) { console.log(error); }
+                            });
+                            res.end();
+                            break;
+                        case req.url.match(/(?<=.\/)location(?!\/.)|(?<=.\/)coordinates(?!\/.)/i) != null:
+                            res.writeHead(200);
+                            var equipment = await mysqlQuery(clientAuthorization[1], "turtles", ["x", "y", "z"], {"TurtleName": turtle, "Status": "Waiting"});
+                            res.write(JSON.stringify(equipment[0]), (error) => {
+                                if (error) { console.log(error); }
+                            });
+                            res.end();
+                            break;
+                        default:
+                            res.writeHead(200);
+                            res.end();
+                            break;
+                    }
+                }
+                else {
+                    res.writeHead(404, "Not found");
+                    res.end();
+                break;
+                }
         }
 
     }).listen(process.env.api_http_port);
@@ -59,11 +107,13 @@ if (process.env.api_use_http == "true") {
     console.log(`httpAPI is listening at 127.0.0.1:${process.env.api_http_port}`);
 }
 
+
+
 /**
- * TODO { Max characters, Proper encryption, Global user(returns the authorized user) }
+ * TODO { Max characters, Proper encryption, }
  * Determines is the client is authorized
  * @param {*} auth The raw authorization used in the HTTP request.
- * @returns Returns given StatusCode.
+ * @returns Returns an array with the statuscode, and the user if the authentication was succesful.
  */
 async function authorizeClient(auth) {
     // Checks if authentication was supplied.
@@ -75,40 +125,56 @@ async function authorizeClient(auth) {
                 break;
             default:
                 console.log("400: Wrong authorization encoding given.");
-                return 400;
+                return [400];
         }
         // Verifies if the user exists.
         var user = /^.+?(?=:)/.exec(result)[0];
         var password = /(?<=:).+?($|\s)/.exec(result)[0];
-        var passwordMatch = await mysqlQuery(user, "users", "Password");
+        var passwordMatch = await mysqlQuery(user, "users", ["Password"]);
         
-        if (password === passwordMatch[0]) {
+        if (password === passwordMatch[0][0]) {
             console.log("200: Authorization successful.");
-            return 200;
+            return [200, user];
         }
     }
     console.log("401: Not authorized.");
-    return 401;
+    return [401];
 }
 
 
 /**
- * TODO { Multiple column support }
  * Queries items from MySQL server.
  * @param {string} user Which user is assigned to the queried items.
  * @param {string} table Which table the items you want to query live.
- * @param {string} column The items you want to query.
- * @returns Returns a list of the queried items.
+ * @param {Array} columns The columns you want to query items from.
+ * @param {Object} condition The condition an row has to comply to for the given item.
+ * @returns Returns an array inside an array, which represent row and column.
  */
-function mysqlQuery(user, table, column) {
+function mysqlQuery(user, table, columns, condition = {}) {
     return new Promise((resolve) => {
-        mysqlConn.query(`SELECT ${column} FROM ${table} WHERE UserName = "${user}"`, (error, results) => {
+        var select = "";
+        for (let i = 0; i < columns.length; i++) {
+            select += `${columns[i]},`;
+        }
+        var conditions = "";
+        
+        if (Object.keys(condition).length > 0) {
+            for (let i = 0; i < Object.keys(condition).length; i++) {
+                conditions += ` AND ${Object.keys(condition)[i]}="${Object.values(condition)[i]}"`;
+            }
+        }
+        select = select.slice(0, -1);
+        mysqlConn.query(`SELECT ${select} FROM ${table} WHERE UserName = "${user}"${conditions}`, (error, results) => {
             if (error) { console.log(error); return; }
             results = JSON.parse(JSON.stringify(results));
-            for (let i = 0; i < Object.keys(results).length; i++) {
-                results[i] = results[i][column];
+            var result = [];
+            for (let row = 0; row < Object.keys(results).length; row++) {
+                result[row] = [];
+                for (let column = 0; column < columns.length; column++) {
+                    result[row][column] = results[row][columns[column]];
+                }
             }
-            resolve(results);
+            resolve(result);
         })
     })
 }
