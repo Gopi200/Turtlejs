@@ -2,10 +2,12 @@ if fs.exists("disk/startup.lua") then
     fs.delete("disk/startup.lua")
     fs.delete("disk/json.lua")
     fs.delete("disk/GUI.lua")
+    fs.delete("disk/tracer.lua")
     fs.delete("startup.lua")
     fs.delete("data.txt")
     fs.delete("json.lua")
     fs.delete("GUI.lua")
+    fs.delete("tracer.lua")
 else
     wfile = fs.open("disk/data.txt","wb")
     print("What is the WebSocket URL?")
@@ -28,4 +30,5 @@ end
 shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/json.lua", "/disk/json.lua")
 shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/startup.lua", "/disk/startup.lua")
 shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/GUI.lua", "/disk/GUI.lua")
+shell.run("wget", "https://raw.githubusercontent.com/Gopi200/Turtlejs/dev/Turtlefiles/tracer.lua", "/disk/tracer.lua")
 os.reboot()

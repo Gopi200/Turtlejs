@@ -41,5 +41,3 @@ function Screeninit(connstatus, funcstatus)
     term.redirect(topwindow.bottom)
     return topwindow
 end
-
-local wind = Screeninit(false, "idle")

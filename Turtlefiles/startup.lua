@@ -1,5 +1,6 @@
 _G.json = require "json"
-
+_G.GUI = require "GUI"
+turtle.tracer = require "tracer"
 
 
 function table.val_to_str ( v )
@@ -40,215 +41,6 @@ end
 
 
 
-local originalfwd = turtle.forward
-function turtle.forward()
-  local succ, err = originalfwd()
-  if succ then
-    local tab = {North=function() _G.data.update("z", _G.data.saveddata.z - 1) end, East=function() _G.data.update("x", _G.data.saveddata.x + 1) end, South=function() _G.data.update("z", _G.data.saveddata.z + 1) end, West=function() _G.data.update("x", _G.data.saveddata.x - 1) end}
-    tab[_G.data.saveddata.Facing]()
-  end
-  return succ, err
-end
-
-local originalback = turtle.back
-function turtle.back()
-  local succ, err = originalback()
-  if succ then
-    local tab = {North=function() _G.data.update("z", _G.data.saveddata.z + 1) end, East=function() _G.data.update("x", _G.data.saveddata.x - 1) end, South=function() _G.data.update("z", _G.data.saveddata.z - 1) end, West=function() _G.data.update("x", _G.data.saveddata.x + 1) end}
-    tab[_G.data.saveddata.Facing]()
-  end
-  return succ, err
-end
-
-local originalup = turtle.up
-function turtle.up()
-  local succ, err = originalup()
-  if succ then
-    _G.data.update("y", _G.data.saveddata.y + 1)
-  end
-  return succ, err
-end
-
-local originaldown = turtle.down
-function turtle.down()
-  local succ, err = originaldown()
-  if succ then
-    _G.data.update("y", _G.data.saveddata.y - 1)
-  end
-  return succ, err
-end
-
-local originalturnleft = turtle.turnLeft
-function turtle.turnLeft()
-  local succ, err = originalturnleft()
-  if succ then
-    local tab = {North=function() _G.data.update("Facing", "West") end, East=function() _G.data.update("Facing", "North") end, South=function() _G.data.update("Facing", "East") end, West= function() _G.data.update("Facing", "South") end}
-    tab[_G.data.saveddata.Facing]()
-  end
-  return succ, err
-end
-
-local originalturnright = turtle.turnRight
-function turtle.turnRight()
-  local succ, err = originalturnright()
-  if succ then
-    local tab = {North=function() _G.data.update("Facing", "East") end, East=function() _G.data.update("Facing", "South") end, South=function() _G.data.update("Facing", "West") end, West=function() _G.data.update("Facing", "North") end}
-    tab[_G.data.saveddata.Facing]()
-  end
-  return succ, err
-end
-
-local originaldig = turtle.dig
-function turtle.dig(side)
-  local succ, err = originaldig(side)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originaldigup = turtle.digUp
-function turtle.digUp(side)
-  local succ, err = originaldigup(side)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originaldigdown = turtle.digDown
-function turtle.digDown(side)
-  local succ, err = originaldigdown(side)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalplace = turtle.place
-function turtle.place(text)
-  local succ, err = originalplace(text)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalplaceup = turtle.placeUp
-function turtle.placeUp(text)
-  local succ, err = originalplaceup(text)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalplacedown = turtle.placeDown
-function turtle.placeDown(text)
-  local succ, err = originalplacedown(side)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originaldrop = turtle.drop
-function turtle.drop(count)
-  local succ, err = originaldrop(count)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originaldropup = turtle.dropUp
-function turtle.dropUp(count)
-  local succ, err = originaldropup(count)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originaldropdown = turtle.dropDown
-function turtle.dropDown(count)
-  local succ, err = originaldropdown(count)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalsuck = turtle.suck
-function turtle.suck(count)
-  local succ, err = originalsuck(count)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalsuckup = turtle.suckUp
-function turtle.suckUp(count)
-  local succ, err = originalsuckup(count)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalsuckdown = turtle.suckDown
-function turtle.suckDown(count)
-  local succ, err = originalsuckdown(count)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originaltransferto = turtle.transferTo
-function turtle.transferTo(slot, count)
-  local succ, err = originaltransferto(slot, count)
-  if succ then
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalequipleft = turtle.equipLeft
-function turtle.equipLeft()
-  local item = turtle.getItemDetail()
-  local succ, err = originalequipleft()
-  if succ then
-    local equipment = _G.data.saveddata.equipment
-    if item then
-      equipment[1] = {item.name, 1}
-    else
-      equipment[1] = {"",0}
-    end
-    _G.data.update("equipment", equipment)
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
-local originalequipright = turtle.equipRight
-function turtle.equipRight()
-  local item = turtle.getItemDetail()
-  local succ, err = originalequipright()
-  if succ then
-    local equipment = _G.data.saveddata.equipment
-    if item then
-      equipment[2] = {item.name, 1}
-    else
-      equipment[2] = {"",0}
-    end
-    _G.data.update("equipment", equipment)
-    _G.data.update("Inventory", turtle.getInventory())
-  end
-  return succ, err
-end
-
 function turtle.getInventory()
   local inv = {}
   for it=1,16 do
@@ -276,7 +68,7 @@ end
 function awaitconnect()
   ws = false
   while ws == false do
-    ws = http.websocket(_G.data.saveddata.URL, "Turtle, Go!")
+    ws = http.websocket(_G.data.saveddata.URL)
   end
   ws.send("Turtleconn\n" .. _G.data.saveddata.TurtleID)
   return ws
@@ -328,6 +120,7 @@ if not fs.exists("startup.lua") then
   settings.set("motd.enable", false)
   fs.copy("disk/json.lua", "json.lua")
   fs.copy("disk/startup.lua", "startup.lua")
+  fs.copy("disk/GUI.lua", "GUI.lua")
   fs.copy("disk/data.txt", "data.txt")
   rfile = fs.open("data.txt", "rb")
   if not os.getComputerLabel() then
