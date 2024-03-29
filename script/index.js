@@ -53,7 +53,8 @@ export default class TurtleServer{
         }
     }
 
-    async registerturtle(ws, data) {
+    async registerturtle(ws, data, inventory) {
+        console.log("Registering")
         sqlconn.query(`SELECT COUNT(*) FROM Turtles WHERE UserID=${data.OwnerID}; SELECT Names FROM useraccounts WHERE UserID=${data.OwnerID};`, (err, results) => {
             if (err) {console.error(err); return}
             console.log(results)
@@ -65,7 +66,7 @@ export default class TurtleServer{
             let label = names[(id-1) % names.length] + " " + Math.floor((id-1)/names.length)
             ws.send(`["${label}", ${id}]`)
             sqlconn.query(`INSERT INTO Turtles(UserID, TurtleName, x, y, z, Facing, Status, Equipment, Inventory, ServerIP)
-            VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${datal[3]}', '${data.ServerIP}')`, (err, results) => {if (err) console.error(err); ws.send(`["${label}", ${results.insertId}]`)});
+            VALUES (${data.OwnerID}, '${label}', ${data.x}, ${data.y}, ${data.z}, '${data.Facing}', 'Waiting', '${JSON.stringify(data.Equipment)}', '${inventory}', '${data.ServerIP}')`, (err, results) => {if (err) console.error(err); ws.send(`["${label}", ${results.insertId}]`)});
             return id
         })
     }
@@ -74,11 +75,11 @@ export default class TurtleServer{
         let datal = data.toString().split("\n")
         console.log(datal)
             switch (datal[0]) {
-                case "new":
+                case "New":
                     switch (datal[1]){
-                        case "turtle":
+                        case "Turtle":
                             let data = JSON.parse(datal[2])
-                            this.registerturtle(ws, data).then(
+                            this.registerturtle(ws, data, datal[3]).then(
                                 sqlconn.query(`SELECT * FROM Turtles WHERE TurtleID=1`, function(err, results) {(async () => {console.log(results)})()})
                             )
                             break

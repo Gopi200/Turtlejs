@@ -70,7 +70,7 @@ function awaitconnect()
   while ws == false do
     ws = http.websocket(_G.data.saveddata.URL)
   end
-  ws.send("Turtleconn\n" .. _G.data.saveddata.TurtleID)
+  ws.send("conn\nturtle\n" .. _G.data.saveddata.TurtleID)
   return ws
 end
 
