@@ -276,7 +276,7 @@ end
 function awaitconnect()
   ws = false
   while ws == false do
-    ws = http.websocket(_G.data.saveddata.URL)
+    ws = http.websocket(_G.data.saveddata.URL, "Turtle, Go!")
   end
   ws.send("Turtleconn\n" .. _G.data.saveddata.TurtleID)
   return ws
@@ -325,7 +325,7 @@ end
 
 
 if not fs.exists("startup.lua") then
-  shell.run("set motd.enable false")
+  settings.set("motd.enable", false)
   fs.copy("disk/json.lua", "json.lua")
   fs.copy("disk/startup.lua", "startup.lua")
   fs.copy("disk/data.txt", "data.txt")
