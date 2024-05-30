@@ -1,2 +1,3 @@
-print(arg[0])
-print(arg[1])
+for i = 1, #arg do
+    print(arg[i])
+end
