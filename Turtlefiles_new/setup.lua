@@ -37,6 +37,7 @@ if arg[3] == "install" then
         type = "string"
     })
 
+    get_new_files()
 end
 
 if arg[3] == "update" then
