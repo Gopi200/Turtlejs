@@ -183,26 +183,32 @@ if arg[3] == "install" then
     prompt.setCursorPos(1, 1)
     response.clear()
 
-    prompt.write("What is the IP:PORT of the TurtleJS server?")
-    local Server_URL = io.stdin:read()
-    prompt.clear()
-    prompt.setCursorPos(1, 1)
-    response.clear()
-
     settings.set("pos", {x, y, z, facing})
-    settings.set("Server_URL", Server_URL)
 
     -- http request Drive ID
-    local res, ID
-    while ID:sub(1, 7) == "Error: " or ID == nil do
-        res = http.post("http://" .. settings.get("Server_URL") .. "/setup", "", {
+    local Server_URL
+    while true do
+        prompt.write("What is the IP:PORT of the TurtleJS server?")
+        Server_URL = io.stdin:read()
+        prompt.clear()
+        prompt.setCursorPos(1, 1)
+        response.clear()
+        local res = http.post("http://" .. settings.get("Server_URL") .. "/setup", "", {
             ownerid = OwnerID,
             server = serverID
         })
-        ID = res.readLine()
+        local ID = res.readLine()
+        if ID:sub(1, 7) == "Error: " then
+            -- print the error, prompt server url again
+        else
+            settings.set("DriveID", ID)
+            break
+        end
     end
 
-    settings.set("DriveID", ID)
+    settings.set("Server_URL", Server_URL)
+    term.redirect(term.native())
+    term.clear()
 
     settings.save("disk/.settings")
 end
