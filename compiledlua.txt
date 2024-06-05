@@ -1,3 +1,4 @@
+STARTFILE disk/startup.lua
 if fs.exists("startup.lua") then
     shell.run("startup")
 else
@@ -27,3 +28,5 @@ else
 
     settings.save()
 end
+
+ENDFILE

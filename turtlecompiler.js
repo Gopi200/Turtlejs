@@ -29,7 +29,7 @@ function getallfiles() {
     if (entries[index].slice(-4) != ".lua") {
       entries.push(...getfiles(entries[index] + "/"));
       entries.splice(index, 1);
-    } else {
+    } else if (entries[index] != "./Turtlefiles_new/setup.lua") {
       fs.appendFileSync(
         "./compiledlua.txt",
         `STARTFILE ${entries[index].slice(18)}\n${fs.readFileSync(
@@ -37,6 +37,8 @@ function getallfiles() {
           "utf-8"
         )}\nENDFILE\n`
       );
+      index++;
+    } else {
       index++;
     }
   }
