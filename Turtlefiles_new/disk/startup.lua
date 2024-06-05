@@ -4,7 +4,7 @@ else
     -- copy everything from disk/turtle to ./
     local files = fs.list("disk/turtle/")
 
-    for file in files do
+    for _, file in pairs(files) do
         fs.copy("disk/turtle/" .. file, file)
     end
 
@@ -12,18 +12,16 @@ else
     settings.load("disk/.settings")
 
     -- register a turtle through api
-    local res, ID, name
-    while ID:sub(1, 7) == "Error: " or ID == nil do
-        res = http.post("http://" .. settings.get("Server_URL") .. "/ID", "", {
+    while true do
+        local res = http.post("http://" .. settings.get("Server_URL") .. "/ID", "", {
             driveid = settings.get("DriveID")
         })
-        ID = res.readLine()
-        name = res.readLine()
+        local ID = res.readLine()
+        if ID:sub(1, 7) ~= "Error: " then
+            settings.set("ID", tonumber(ID))
+            os.setComputerLabel(res.readLine())
+        end
     end
-
-    -- set name and id
-    settings.set("ID", ID)
-    os.setComputerLabel(name)
 
     settings.save()
     os.reboot()
