@@ -24,10 +24,12 @@ export class TurtleAPI {
       case "/setup":
         try {
           res.end(
-            await this.TurtleDB.registerDrive(
-              Number(req.headers.ownerid),
-              req.headers.server
-            ).join("\n")
+            (
+              await this.TurtleDB.registerDrive(
+                Number(req.headers.ownerid),
+                req.headers.server
+              )
+            ).toString()
           );
         } catch (err) {
           res.end(`Error: ${err}`);

@@ -1,43 +1,43 @@
 local this_version = "0.2.0"
 
-function decompfile(file, include_disk)
+function decompfile(file, normal, disk)
     local startline = file.readLine()
     if startline == nil then
         return false
     end
+    local filename = startline:sub(11)
 
     local diskfile
-    local filename = startline:sub(11)
-    if filename:sub(1, 6) == "disk/" then
+    if filename:sub(1, 5) == "disk/" then
         diskfile = true
     end
 
     local curfile
-    if diskfile == include_disk or not include_disk then
+    if normal or (diskfile and disk) then
         curfile = fs.open(filename, "w")
     end
 
     local curdiskfile
-    if not diskfile and include_disk then
+    if disk and not diskfile then
         curdiskfile = fs.open("disk/turtle/" .. filename, "w")
     end
 
     while true do
         local curline = file.readLine()
-        if curline:sub(1, 8) == "ENDFILE" then
+        if curline:sub(1, 7) == "ENDFILE" then
             break
         end
-        if diskfile == include_disk or not include_disk then
+        if normal or (diskfile and disk) then
             curfile.writeLine(curline)
         end
-        if not diskfile and include_disk then
+        if disk and not diskfile then
             curdiskfile.writeLine(curline)
         end
     end
     return true
 end
 
-function get_new_files(include_disk)
+function get_new_files(normal, disk)
     shell.run("wget https://github.com/Gopi200/Turtlejs/releases/download/" .. this_version ..
                   "/compiledlua.txt compiledlua.txt")
 
@@ -45,7 +45,7 @@ function get_new_files(include_disk)
 
     local looping = true
     while looping do
-        looping = decompfile(compiledfile)
+        looping = decompfile(compiledfile, normal, disk)
     end
 
     fs.delete("compiledlua.txt")
@@ -56,7 +56,7 @@ function update(include_drive)
 
     for file in files do
         if file ~= "disk" and file ~= "rom" then
-            if file ~= "data.txt" then
+            if file ~= ".settings" then
                 fs.delete(file)
             end
         end
@@ -66,13 +66,13 @@ function update(include_drive)
         local files = fs.list("disk")
 
         for file in files do
-            if file ~= "data.txt" then
+            if file ~= ".settings" then
                 fs.delete(file)
             end
         end
     end
 
-    get_new_files(include_drive)
+    get_new_files(true, include_drive)
 end
 
 if arg[3] == "install" then
@@ -101,7 +101,7 @@ if arg[3] == "install" then
         type = "number"
     })
 
-    get_new_files(true)
+    get_new_files(false, true)
 end
 
 if arg[3] == "update" then
@@ -183,7 +183,7 @@ if arg[3] == "install" then
     prompt.setCursorPos(1, 1)
     response.clear()
 
-    settings.set("pos", {x, y, z, facing})
+    settings.set("pos", {tonumber(x), tonumber(y), tonumber(z), facing})
 
     -- http request Drive ID
     local Server_URL
@@ -193,15 +193,16 @@ if arg[3] == "install" then
         prompt.clear()
         prompt.setCursorPos(1, 1)
         response.clear()
-        local res = http.post("http://" .. settings.get("Server_URL") .. "/setup", "", {
+        local res = http.post("http://" .. Server_URL .. "/setup", "", {
             ownerid = OwnerID,
             server = serverID
         })
         local ID = res.readLine()
         if ID:sub(1, 7) == "Error: " then
+            print(ID)
             -- print the error, prompt server url again
         else
-            settings.set("DriveID", ID)
+            settings.set("DriveID", tonumber(ID))
             break
         end
     end
