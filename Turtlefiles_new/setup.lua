@@ -143,7 +143,30 @@ if arg[3] == "install" then
     local prompt = window.create(term.native(), 3, 3, screenx - 4, 1)
     local response = window.create(term.native(), 5, 4, screenx - 6, 1)
 
+    term.redirect(response)
     response.setCursorPos(1, 1)
+
+    prompt.write("What is my x coordinate?")
+    local x = io.stdin.read()
+    prompt.clear()
+    response.clear()
+
+    prompt.write("What is my y coordinate?")
+    local y = io.stdin.read()
+    prompt.clear()
+    response.clear()
+
+    prompt.write("What is my z coordinate?")
+    local z = io.stdin.read()
+    prompt.clear()
+    response.clear()
+
+    prompt.write("Which direction would turtles placed here be facing?")
+    local facing = io.stdin.read()
+    prompt.clear()
+    response.clear()
+
+    settings.set("pos", {x, y, z, facing})
 
     -- http request Drive ID
 
