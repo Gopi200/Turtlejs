@@ -133,6 +133,7 @@ if arg[3] == "install" then
         terminal.write(text)
     end
 
+    term.clear()
     local screenx, screeny = term.getSize()
     paintutils.drawBox(1, 1, screenx, screeny, colours.white)
     term.setBackgroundColour(colours.black)

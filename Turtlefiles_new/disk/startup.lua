@@ -2,7 +2,7 @@ if fs.exists("startup.lua") then
     shell.run("startup")
 else
     -- copy everything from disk/turtle to ./
-    local files = fs.list("disk/turtle")
+    local files = fs.list("disk/turtle/")
 
     for file in files do
         fs.copy("disk/turtle/" .. file, file)
