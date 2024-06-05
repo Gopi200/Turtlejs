@@ -22,6 +22,16 @@ export class TurtleAPI {
         }
         break;
       case "/setup":
+        try {
+          res.end(
+            await this.TurtleDB.registerDrive(
+              Number(req.headers.ownerid),
+              req.headers.server
+            ).join("\n")
+          );
+        } catch (err) {
+          res.end(`Error: ${err}`);
+        }
         break;
 
       default:

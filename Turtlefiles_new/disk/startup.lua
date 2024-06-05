@@ -2,7 +2,7 @@ if fs.exists("startup.lua") then
     shell.run("startup")
 else
     -- copy everything from disk/turtle to ./
-    local files = fs.list("disk/turtle/")
+    local status, files = pcall(fs.list, "disk/turtle/")
 
     for file in files do
         fs.copy("disk/turtle/" .. file, file)
@@ -14,7 +14,7 @@ else
     -- register a turtle through api
     local res, ID, name
     while ID:sub(1, 7) == "Error: " or ID == nil do
-        res = http.post("http://" .. settings.get("WS_URL"), "", {
+        res = http.post("http://" .. settings.get("Server_URL") .. "/ID", "", {
             driveid = settings.get("DriveID")
         })
         ID = res.readLine()
@@ -26,4 +26,5 @@ else
     os.setComputerLabel(name)
 
     settings.save()
+    os.reboot()
 end

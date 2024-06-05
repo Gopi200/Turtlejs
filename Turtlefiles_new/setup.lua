@@ -88,7 +88,7 @@ if arg[3] == "install" then
         description = "Position of this turtle formatted in {x,y,z,facing}",
         type = "table"
     })
-    settings.define("WS_URL", {
+    settings.define("Server_URL", {
         description = "URL for the WebSocket Server this turtle will connect to",
         type = "string"
     })
@@ -148,28 +148,61 @@ if arg[3] == "install" then
     response.setCursorPos(1, 1)
 
     prompt.write("What is my x coordinate?")
-    local x = io.stdin.read()
+    local x = io.stdin:read()
     prompt.clear()
+    prompt.setCursorPos(1, 1)
     response.clear()
 
     prompt.write("What is my y coordinate?")
-    local y = io.stdin.read()
+    local y = io.stdin:read()
     prompt.clear()
+    prompt.setCursorPos(1, 1)
     response.clear()
 
     prompt.write("What is my z coordinate?")
-    local z = io.stdin.read()
+    local z = io.stdin:read()
     prompt.clear()
+    prompt.setCursorPos(1, 1)
     response.clear()
 
-    prompt.write("Which direction would turtles placed here be facing?")
-    local facing = io.stdin.read()
+    prompt.write("Which direction would turtles placed here be facing? (N|E|S|W)")
+    local facing = io.stdin:read()
     prompt.clear()
+    prompt.setCursorPos(1, 1)
+    response.clear()
+
+    prompt.write("Which ID does my owner have?")
+    local OwnerID = io.stdin:read()
+    prompt.clear()
+    prompt.setCursorPos(1, 1)
+    response.clear()
+
+    prompt.write("Which server am i on? (Use any identifier unique to this server)")
+    local serverID = io.stdin:read()
+    prompt.clear()
+    prompt.setCursorPos(1, 1)
+    response.clear()
+
+    prompt.write("What is the IP:PORT of the TurtleJS server?")
+    local Server_URL = io.stdin:read()
+    prompt.clear()
+    prompt.setCursorPos(1, 1)
     response.clear()
 
     settings.set("pos", {x, y, z, facing})
+    settings.set("Server_URL", Server_URL)
 
     -- http request Drive ID
+    local res, ID
+    while ID:sub(1, 7) == "Error: " or ID == nil do
+        res = http.post("http://" .. settings.get("Server_URL") .. "/setup", "", {
+            ownerid = OwnerID,
+            server = serverID
+        })
+        ID = res.readLine()
+    end
+
+    settings.set("DriveID", ID)
 
     settings.save("disk/.settings")
 end
