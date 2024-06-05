@@ -13,8 +13,8 @@ export class TurtleAPI {
       case "/ID":
         try {
           res.end(
-            await this.TurtleDB.registerTurtle(
-              Number(req.headers.driveid)
+            (
+              await this.TurtleDB.registerTurtle(Number(req.headers.driveid))
             ).join("\n")
           );
         } catch (err) {

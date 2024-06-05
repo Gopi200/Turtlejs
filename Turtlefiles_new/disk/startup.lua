@@ -14,13 +14,15 @@ else
     -- register a turtle through api
     while true do
         local res = http.post("http://" .. settings.get("Server_URL") .. "/ID", "", {
-            driveid = settings.get("DriveID")
+            driveid = tostring(settings.get("DriveID"))
         })
         local ID = res.readLine()
         if ID:sub(1, 7) ~= "Error: " then
             settings.set("ID", tonumber(ID))
             os.setComputerLabel(res.readLine())
+            break
         end
+        os.sleep(10)
     end
 
     settings.save()
