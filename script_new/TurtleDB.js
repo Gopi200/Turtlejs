@@ -1,4 +1,5 @@
 import fs from "fs";
+import { randomBytes } from "crypto";
 
 const defaultnames = [
   "P. Alabamensis",
@@ -50,15 +51,38 @@ class Lock {
   }
 }
 
+function newKey(UserID) {
+  UserID = UserID.toString();
+  while (UserID.length < 8) {
+    UserID = "0" + UserID;
+  }
+  let fin = "";
+  for (let i = 1; i <= UserID.length; i++) {
+    fin +=
+      randomBytes(
+        Math.round(
+          (64 / UserID.length) * i - Math.floor((64 / UserID.length) * i)
+        ) +
+          Math.floor(64 / UserID.length) -
+          1
+      ).toString("ascii") + UserID.slice(i - 1, i);
+  }
+  return Buffer.from(fin, "ascii");
+}
+
 export class TurtleDB {
   constructor(Filepath) {
     this.Filepath = Filepath;
     if (fs.existsSync(Filepath)) {
       this.jsonDB = JSON.parse(fs.readFileSync(Filepath));
     } else {
+      let adminkey = newKey(0).toString("ascii");
       this.jsonDB = {
-        users: { 0: { name: "admin", APIKEY: "NYD", nameset: defaultnames } },
+        users: {
+          0: { name: "admin", APIKEY: adminkey, nameset: defaultnames },
+        },
         drives: {},
+        APIKEYS: { [adminkey]: 0 },
       };
       fs.writeFileSync(Filepath, JSON.stringify(this.jsonDB));
     }
@@ -124,13 +148,15 @@ export class TurtleDB {
     //Make API key, push to db
     await this.lock.acquire();
     const ID = await this.count(`/users`);
-    const APIKEY = "NYD";
+    const APIKEY = newKey(ID).toString("ascii");
 
     this.push(`/users/${ID}`, {
       name: name,
       APIKEY: APIKEY,
       nameset: defaultnames,
     });
+
+    this.push(`/APIKEYS/${APIKEY}`, ID);
 
     this.lock.release();
   }

@@ -1,16 +1,14 @@
 {
   "name": "turtlejs",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "An api to control turtles through javascript",
   "main": "index.js",
   "repository": "https://github.com/Gopi200/Turtlejs.git",
   "author": "Gopi200 <61714236+Gopi200@users.noreply.github.com>",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "crypto": "^1.0.1",
-    "dotenv": "^16.3.1",
-    "mysql": "^2.18.1",
+    "http-proxy": "^1.18.1",
     "ws": "^8.16.0"
   },
   "type": "module"

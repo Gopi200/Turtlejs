@@ -1,11 +1,29 @@
 import * as http from "node:http";
+import httpProxy from "http-proxy";
+import { TurtleServer } from "./Websocket.js";
 
 export class TurtleAPI {
-  constructor(TurtleDB, port) {
+  constructor(TurtleDB, Port, WSPort) {
     this.TurtleDB = TurtleDB;
-    this.httpAPI = http
-      .createServer((req, res) => this.handleHttpReq(req, res))
-      .listen(port);
+
+    this.TurtleServer = new TurtleServer(TurtleDB, WSPort);
+
+    this.httpAPI = http.createServer((req, res) =>
+      this.handleHttpReq(req, res)
+    );
+
+    var proxy = httpProxy.createProxyServer();
+
+    this.httpAPI.on("upgrade", (req, socket, head) => {
+      if (req.headers.upgrade == "websocket") {
+        proxy.ws(req, socket, head, {
+          target: `ws://localhost:${WSPort}`,
+          ws: true,
+        });
+      }
+    });
+
+    this.httpAPI.listen(Port);
   }
 
   async turtleRequest(req, res) {
@@ -37,12 +55,59 @@ export class TurtleAPI {
         break;
 
       default:
+        res.end("Turtle connected to wrong path");
         break;
     }
   }
 
+  async userRequest(req, res) {
+    if (req.method == "GET") {
+      if (
+        req.headers.apikey !=
+        (await this.TurtleDB.getData(`users/${req.headers.userid}/APIKEY`))
+      ) {
+        res.end("Wrong APIKEY");
+      } else if (
+        !this.TurtleServer.checkForTurtle(
+          req.headers.userid,
+          req.headers.turtleid
+        )
+      ) {
+        res.end("Turtle not connected");
+      } else {
+        res.end(
+          await this.TurtleServer.getFromTurtle(
+            req.headers.userid,
+            req.headers.turtleid,
+            req.url.slice(1)
+          )
+        );
+      }
+    } else if (req.method == "POST") {
+      if (
+        req.headers.apikey !=
+        (await this.TurtleDB.getData(`users/${req.headers.userid}/APIKEY`))
+      ) {
+        res.end("Wrong APIKEY");
+      } else if (
+        !this.TurtleServer.checkForTurtle(
+          req.headers.userid,
+          req.headers.turtleid
+        )
+      ) {
+        res.end("Turtle not connected");
+      } else {
+        this.TurtleServer.connections.turtles[req.headers.userid][
+          req.headers.turtleid
+        ].send(req.body);
+        res.end();
+      }
+    }
+    //"".replace(/turtle\.\w+\([^()]*\)/g);
+  }
+
   async handleHttpReq(req, res) {
-    req.body = await ((req) => {
+    req.body = await (() => {
       return new Promise((resolve) => {
         let body = "";
         req
@@ -51,13 +116,14 @@ export class TurtleAPI {
             resolve(body);
           });
       });
-    })(req);
+    })();
 
-    if (req.headers["user-agent"].slice(0, 13) == "computercraft") {
-      this.turtleRequest(req, res);
+    try {
+      if (req.headers["user-agent"].slice(0, 13) == "computercraft") {
+        this.turtleRequest(req, res);
+      }
+    } catch {
+      this.userRequest(req, res);
     }
-
-    console.log(`Requested at: ${req.url}`);
-    console.log(req.headers);
   }
 }

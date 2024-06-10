@@ -1,6 +1,6 @@
-local this_version = "0.2.0"
+local this_version = "1.0.0"
 
-function decompfile(file, normal, disk)
+local function decompfile(file, normal, disk)
     local startline = file.readLine()
     if startline == nil then
         return false
@@ -37,7 +37,7 @@ function decompfile(file, normal, disk)
     return true
 end
 
-function get_new_files(normal, disk)
+local function get_new_files(normal, disk)
     shell.run("wget https://github.com/Gopi200/Turtlejs/releases/download/" .. this_version ..
                   "/compiledlua.txt compiledlua.txt")
 
@@ -51,10 +51,10 @@ function get_new_files(normal, disk)
     fs.delete("compiledlua.txt")
 end
 
-function update(include_drive)
+local function update(include_drive)
     local files = fs.list("./")
 
-    for file in files do
+    for _, file in pairs(files) do
         if file ~= "disk" and file ~= "rom" then
             if file ~= ".settings" then
                 fs.delete(file)
@@ -65,7 +65,7 @@ function update(include_drive)
     if include_drive then
         local files = fs.list("disk")
 
-        for file in files do
+        for _, file in pairs(files) do
             if file ~= ".settings" then
                 fs.delete(file)
             end
@@ -127,72 +127,68 @@ if arg[3] == "install" then
     settings.set("motd.enable", false)
     -- With GUI set up location, owner id, server, WS URL
 
-    function Writecenter(terminal, Y, text)
-        local X = math.floor((terminal.getSize() - #text) / 2)
-        terminal.setCursorPos(X, Y)
-        terminal.write(text)
+    -- TODO
+    -- Use the leftover space at the bottom for debugging, make any errors print here (Might work now)
+    -- Make the ui a little prettier by adding a label of the version and the fact that this is the setup
+    -- Try to make the facing directon use buttons
+
+    local function PromptUser(Thiswindow, inputstring)
+        Thiswindow.setCursorPos(1, 1)
+        Thiswindow.clear()
+        local windowx, windowy = Thiswindow.getSize()
+        local lines = {}
+        local curline = ""
+        for word in inputstring:gmatch("[^ ]+") do
+            curline = curline .. word .. " "
+            if #curline > windowx then
+                table.insert(lines, #lines + 1, curline:sub(1, -(#word + 3)))
+                curline = word .. " "
+            end
+        end
+        local cury = 1
+        for _, line in pairs(lines) do
+            Thiswindow.write(line)
+            cury = cury + 1
+            Thiswindow.setCursorPos(1, cury)
+        end
+
+        Thiswindow.write(curline .. "\n")
+        Thiswindow.setCursorPos(1, cury + 1)
+        Thiswindow.write("> ")
+        Thiswindow.setCursorBlink(true)
+        local response = io.stdin:read()
+        Thiswindow.clear()
+        return response
     end
 
     term.clear()
     local screenx, screeny = term.getSize()
     paintutils.drawBox(1, 1, screenx, screeny, colours.white)
     term.setBackgroundColour(colours.black)
+    term.setCursorPos(math.floor((term.getSize() - #this_version - 16) / 2), 3)
+    term.write("TurtleJS setup v" .. this_version)
 
-    term.setCursorPos(3, 4)
-    term.write(">")
+    local prompt = window.create(term.native(), 3, 5, screenx - 4, screeny - 6)
+    term.redirect(prompt)
 
-    local prompt = window.create(term.native(), 3, 3, screenx - 4, 1)
-    local response = window.create(term.native(), 5, 4, screenx - 6, 1)
+    local x = tonumber(PromptUser(prompt, "What is my x coordinate?"))
 
-    term.redirect(response)
-    response.setCursorPos(1, 1)
+    local y = tonumber(PromptUser(prompt, "What is my y coordinate?"))
 
-    prompt.write("What is my x coordinate?")
-    local x = io.stdin:read()
-    prompt.clear()
-    prompt.setCursorPos(1, 1)
-    response.clear()
+    local z = tonumber(PromptUser(prompt, "What is my z coordinate?"))
 
-    prompt.write("What is my y coordinate?")
-    local y = io.stdin:read()
-    prompt.clear()
-    prompt.setCursorPos(1, 1)
-    response.clear()
+    local facing = PromptUser(prompt, "Which direction would turtles placed here be facing? (N|E|S|W)")
 
-    prompt.write("What is my z coordinate?")
-    local z = io.stdin:read()
-    prompt.clear()
-    prompt.setCursorPos(1, 1)
-    response.clear()
+    local OwnerID = PromptUser(prompt, "Which ID does my owner have?")
 
-    prompt.write("Which direction would turtles placed here be facing? (N|E|S|W)")
-    local facing = io.stdin:read()
-    prompt.clear()
-    prompt.setCursorPos(1, 1)
-    response.clear()
+    local serverID = PromptUser(prompt, "Which server am i on? (Use any identifier unique to this server)")
 
-    prompt.write("Which ID does my owner have?")
-    local OwnerID = io.stdin:read()
-    prompt.clear()
-    prompt.setCursorPos(1, 1)
-    response.clear()
-
-    prompt.write("Which server am i on? (Use any identifier unique to this server)")
-    local serverID = io.stdin:read()
-    prompt.clear()
-    prompt.setCursorPos(1, 1)
-    response.clear()
-
-    settings.set("pos", {tonumber(x), tonumber(y), tonumber(z), facing})
+    settings.set("pos", {x, y, z, facing})
 
     -- http request Drive ID
     local Server_URL
     while true do
-        prompt.write("What is the IP:PORT of the TurtleJS server?")
-        Server_URL = io.stdin:read()
-        prompt.clear()
-        prompt.setCursorPos(1, 1)
-        response.clear()
+        Server_URL = PromptUser(prompt, "What is the IP:PORT of the TurtleJS server?")
         local res = http.post("http://" .. Server_URL .. "/setup", "", {
             ownerid = OwnerID,
             server = serverID
@@ -205,6 +201,7 @@ if arg[3] == "install" then
             settings.set("DriveID", tonumber(ID))
             break
         end
+        os.sleep(10)
     end
 
     settings.set("Server_URL", Server_URL)
