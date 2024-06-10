@@ -61,51 +61,43 @@ export class TurtleAPI {
   }
 
   async userRequest(req, res) {
+    let UserID;
+    try {
+      UserID = await this.TurtleDB.getData(`APIKEYS/${req.headers.apikey}`);
+    } catch {
+      res.end("Wrong APIKEY");
+    }
     if (req.method == "GET") {
-      if (
-        req.headers.apikey !=
-        (await this.TurtleDB.getData(`users/${req.headers.userid}/APIKEY`))
-      ) {
-        res.end("Wrong APIKEY");
-      } else if (
-        !this.TurtleServer.checkForTurtle(
-          req.headers.userid,
-          req.headers.turtleid
-        )
-      ) {
+      if (!this.TurtleServer.checkForTurtle(UserID, req.headers.turtleid)) {
         res.end("Turtle not connected");
       } else {
         res.end(
           await this.TurtleServer.getFromTurtle(
-            req.headers.userid,
+            UserID,
             req.headers.turtleid,
             req.url.slice(1)
           )
         );
       }
     } else if (req.method == "POST") {
-      if (
-        req.headers.apikey !=
-        (await this.TurtleDB.getData(`users/${req.headers.userid}/APIKEY`))
-      ) {
-        res.end("Wrong APIKEY");
-      } else if (
-        !this.TurtleServer.checkForTurtle(
-          req.headers.userid,
-          req.headers.turtleid
-        )
-      ) {
+      if (!this.TurtleServer.checkForTurtle(UserID, req.headers.turtleid)) {
         res.end("Turtle not connected");
       } else {
-        this.TurtleServer.connections.turtles[req.headers.userid][
-          req.headers.turtleid
-        ].send(req.body);
+        let turtle =
+          this.TurtleServer.connections.turtles[UserID][req.headers.turtleid];
+
+        if (req.headers.lazyyield) {
+          req.body.replace(
+            /(turtle\.\w+)\(([^)(]*(?:\([^)(]*(?:\([^)(]*(?:\([^)(]*\)[^)(]*)*\)[^)(]*)*\)[^)(]*)*)\)/g,
+            "addyield($1, $2)"
+          );
+        }
+
+        turtle.send(req.body);
         res.end();
       }
     }
-    //"".replace(/turtle\.\w+\([^()]*\)/g);
   }
-
   async handleHttpReq(req, res) {
     req.body = await (() => {
       return new Promise((resolve) => {

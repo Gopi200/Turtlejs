@@ -4,6 +4,17 @@ require("./tracker")
 -- All functions that will be run in parallel with WScomm
 parallelfuncs = {}
 
+local yield = coroutine.yield
+function coroutine.yield()
+    os.startTimer(0.05)
+    yield()
+end
+
+function addyield(func, ...)
+    coroutine.yield()
+    func(...)
+end
+
 local function HandleMessage(message)
     if message.functions ~= nil then
         for _, func in pairs(message.functions) do
