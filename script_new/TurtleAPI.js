@@ -61,6 +61,7 @@ export class TurtleAPI {
   }
 
   async userRequest(req, res) {
+    req.headers.apikey = decodeURIComponent(req.headers.apikey);
     let UserID;
     try {
       UserID = await this.TurtleDB.getData(`APIKEYS/${req.headers.apikey}`);
