@@ -1,16 +1,12 @@
 -- Import a version of the turtle module that updates location
 require("./tracker")
+Event = require("./eventhandler")
 
 -- All functions that will be run in parallel with WScomm
 parallelfuncs = {}
 
-function yield()
-    os.startTimer(0.05)
-    yield()
-end
-
 function addyield(func, ...)
-    yield()
+    coroutine.yield()
     func(...)
 end
 
@@ -31,7 +27,7 @@ local function HandleMessage(message)
     if message.run ~= nil then
         parallelfuncs = {}
         for _, func in pairs(message.run) do
-            table.insert(parallelfuncs, load(func))
+            table.insert(parallelfuncs, coroutine.create(load(func)))
         end
         return true
     end
@@ -41,27 +37,33 @@ local function HandleMessage(message)
     end
 end
 
-function WScomm()
-    while true do
-        local eventData = {os.pullEvent()}
-
-        if eventData[1] == "websocket_success" then
-            WShandle = eventData[3]
-            WShandle.send(textutils.serializeJSON({
-                id = settings.get("ID"),
-                driveid = settings.get("DriveID")
-            }))
-        elseif eventData[1] == "websocket_failure" or eventData[1] == "websocket_closed" then
-            http.websocketAsync("ws://" .. settings.get("Server_URL"))
-        elseif eventData[1] == "websocket_message" then
-            if HandleMessage(textutils.unserialiseJSON(eventData[3])) then
-                return
-            end
-        end
-    end
+local function WebSocketSuccessHandler(URL, handle)
+    WShandle = eventData[3]
+    WShandle.send(textutils.serializeJSON({
+        id = settings.get("ID"),
+        driveid = settings.get("DriveID")
+    }))
 end
 
-http.websocketAsync("ws://" .. settings.get("Server_URL"))
+local function WebSocketMessageHandler(URL, content, bin)
+    HandleMessage(textutils.unserialiseJSON(content))
+end
+
+local function WebSocketConnect()
+    http.websocketAsync("ws://" .. settings.get("Server_URL"))
+end
+
+CheckOS = Event.startOSListener()
+Event.addListener("websocket_success", WebSocketSuccessHandler)
+Event.addListener("websocket_failure", WebSocketConnect)
+Event.addListener("websocket_closed", WebSocketConnect)
+Event.addListener("websocket_message", WebSocketConnect)
+WebSocketConnect()
+
 while true do
-    parallel.waitForAny(WScomm, table.unpack(parallelfuncs))
+    CheckOS()
+    for _, CR in pairs(parallelfuncs) do
+        CheckOS()
+        coroutine.resume(CR)
+    end
 end
