@@ -1,26 +1,27 @@
-STARTFILE startup.lua
+STARTFILE tup.lua
 -- Import a version of the turtle module that updates location
-require("./tracker")
-
--- All functions that will be run in parallel with WScomm
-parallelfuncs = {}
-
-function yield()
-    os.startTimer(0.05)
-    yield()
+--require("./mnt/tracker")
+Event = require("./mnt/eventhandler")
+for _,file in pairs(fs.list("/temp")) do
+    fs.delete("/temp/"..file)
 end
 
+-- All functions that will be run in parallel with WScomm
 function addyield(func, ...)
-    yield()
+    coroutine.yield()
     func(...)
 end
 
 local function HandleMessage(message)
-    if message.functions ~= nil then
-        for _, func in pairs(message.functions) do
-            load(func)()
+    if message.luafile ~= nil then
+        for name, file in pairs(message.luafile) do
+            local f = fs.open("/temp/"..name, "w")
+            f.write(file)
+            f.close()
+            multishell.launch({}, "/temp/"..name)
         end
     end
+
     if message.get ~= nil then
         local response = {}
         for _, value in pairs(message.get) do
@@ -30,45 +31,96 @@ local function HandleMessage(message)
     end
 
     if message.run ~= nil then
-        parallelfuncs = {}
         for _, func in pairs(message.run) do
-            table.insert(parallelfuncs, load(func))
+            load(func)()
         end
         return true
     end
+
     if message.stop ~= nil then
-        parallelfuncs = {}
         return true
     end
+    return true
 end
 
-function WScomm()
-    while true do
-        local eventData = {os.pullEvent()}
+local function WebSocketSuccessHandler(URL, handle)
+    print(handle)
+    print(URL)
+    WShandle = handle
+    WShandle.send(textutils.serializeJSON({
+        id = settings.get("ID"),
+        driveid = settings.get("DriveID")
+    }))
+end
 
-        if eventData[1] == "websocket_success" then
-            WShandle = eventData[3]
-            WShandle.send(textutils.serializeJSON({
-                id = settings.get("ID"),
-                driveid = settings.get("DriveID")
-            }))
-        elseif eventData[1] == "websocket_failure" or eventData[1] == "websocket_closed" then
-            http.websocketAsync("ws://" .. settings.get("Server_URL"))
-        elseif eventData[1] == "websocket_message" then
-            if HandleMessage(textutils.unserialiseJSON(eventData[3])) then
-                return
-            end
+local function WebSocketMessageHandler(URL, content, bin)
+    WShandle.send(textutils.serialiseJSON(HandleMessage(textutils.unserialiseJSON(content))))
+end
+
+local function WebSocketConnect()
+    http.websocketAsync("ws://" .. settings.get("Server_URL"))
+end
+
+Event.addListener("websocket_success", WebSocketSuccessHandler)
+Event.addListener("websocket_failure", WebSocketConnect)
+Event.addListener("websocket_closed", WebSocketConnect)
+Event.addListener("websocket_message", WebSocketMessageHandler)
+
+local function testfunc()
+    print(1)
+    coroutine.yield()
+    print(2)
+    coroutine.yield()
+    print(3)
+end
+
+WebSocketConnect()
+Event.Oslistenerthread()
+--parallel.waitForAny(testfunc, Event.Oslistenerthread)
+print("Wuh oh")
+ENDFILE
+STARTFILE thandler.lua
+local EventListeners = {}
+local Event = {}
+
+function Event.createType(name)
+    EventListeners[name] = {}
+end
+
+function Event.removeType(name)
+    table.remove(EventListeners, name)
+end
+
+function Event.addListener(eventtype, func)
+    if EventListeners[eventtype] == nil then
+        Event.createType(eventtype)
+    end
+    table.insert(EventListeners[eventtype], func)
+end
+
+function Event.trigger(eventtype, eventdata)
+    if EventListeners[eventtype] ~= nil then
+        for _, func in pairs(EventListeners[eventtype]) do
+            func(table.unpack(eventdata))
         end
     end
 end
 
-http.websocketAsync("ws://" .. settings.get("Server_URL"))
-while true do
-    parallel.waitForAny(WScomm, table.unpack(parallelfuncs))
+function Event.Oslistenerthread()
+    while true do
+        local eventdata = {os.pullEvent()}
+        local eventtype = table.remove(eventdata, 1)
+        print(eventtype)
+        Event.trigger(eventtype, eventdata)
+    end
 end
 
+return Event
+
+--I have a function that looks for a websocket event, and kills the program if it's waited on
+--To fix this i need to not ever wait on it. Is there a way to run it as a sub-function?
 ENDFILE
-STARTFILE tracker.lua
+STARTFILE ker.lua
 local up = turtle.up
 function turtle.up()
     local res = {up()}
@@ -164,7 +216,29 @@ function turtle.turnRight()
 end
 
 ENDFILE
-STARTFILE disk/startup.lua
+STARTFILE adtest.lua
+function CRF1()
+    print(1)
+    coroutine.yield()
+end
+
+function CRF2()
+    print(2)
+end
+
+CR1 = coroutine.create(CRF1)
+CR2 = coroutine.create(CRF2)
+
+coroutine.resume(CR1)
+print("1 done")
+coroutine.resume(CR2)
+print("2 done")
+print(coroutine.status(CR1))
+print(coroutine.status(CR2))
+coroutine.resume(CR1)
+print(coroutine.status(CR1))
+ENDFILE
+STARTFILE /startup.lua
 if fs.exists("startup.lua") then
     shell.run("startup")
 else
@@ -173,6 +247,7 @@ else
 
     for _, file in pairs(files) do
         fs.copy("disk/turtle/" .. file, file)
+        fs.makeDir(temp)
     end
 
     -- set up data on turtle

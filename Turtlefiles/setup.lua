@@ -1,4 +1,4 @@
-local this_version = "1.0.1"
+local this_version = "1.0.2"
 
 local function decompfile(file, normal, disk)
     local startline = file.readLine()

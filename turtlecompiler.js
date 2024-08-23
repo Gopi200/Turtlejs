@@ -21,7 +21,7 @@ function getfiles(dir) {
 }
 
 function getallfiles() {
-  var entries = getfiles("./Turtlefiles_new/");
+  var entries = getfiles("./Turtlefiles/");
   let index = 0;
   while (index < entries.length) {
     console.log(`INDEX ${index}
@@ -29,7 +29,7 @@ function getallfiles() {
     if (entries[index].slice(-4) != ".lua") {
       entries.push(...getfiles(entries[index] + "/"));
       entries.splice(index, 1);
-    } else if (entries[index] != "./Turtlefiles_new/setup.lua") {
+    } else if (entries[index] != "./Turtlefiles/setup.lua") {
       fs.appendFileSync(
         "./compiledlua.txt",
         `STARTFILE ${entries[index].slice(18)}\n${fs.readFileSync(

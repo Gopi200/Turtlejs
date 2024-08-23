@@ -17,29 +17,21 @@ function Event.addListener(eventtype, func)
 end
 
 function Event.trigger(eventtype, eventdata)
-    for _, func in pairs(EventListeners[eventtype]) do
-        func(eventdata)
+    if EventListeners[eventtype] ~= nil then
+        for _, func in pairs(EventListeners[eventtype]) do
+            func(table.unpack(eventdata))
+        end
     end
 end
 
-local function Oslistenerthread()
+function Event.Oslistenerthread()
     while true do
         local eventdata = {os.pullEvent()}
         local eventtype = table.remove(eventdata, 1)
+        print(eventtype)
         Event.trigger(eventtype, eventdata)
     end
 end
-
-local function checkOs(CR)
-    os.startTimer(0.05)
-    coroutine.resume(CR)
-end
-
-function Event.startOSListener()
-    return function() checkOs(coroutine.create(Oslistenerthread)) end
-end
-
-print(Event.startOSListener()())
 
 return Event
 

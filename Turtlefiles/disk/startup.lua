@@ -6,6 +6,7 @@ else
 
     for _, file in pairs(files) do
         fs.copy("disk/turtle/" .. file, file)
+        fs.makeDir(temp)
     end
 
     -- set up data on turtle

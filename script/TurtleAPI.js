@@ -68,35 +68,28 @@ export class TurtleAPI {
     } catch {
       res.end("Wrong APIKEY");
     }
-    if (req.method == "GET") {
-      if (!this.TurtleServer.checkForTurtle(UserID, req.headers.turtleid)) {
-        res.end("Turtle not connected");
-      } else {
-        res.end(
-          await this.TurtleServer.getFromTurtle(
-            UserID,
-            req.headers.turtleid,
-            req.url.slice(1)
-          )
+    if (!this.TurtleServer.checkForTurtle(UserID, req.headers.turtleid)) {
+      res.end("Turtle not connected");
+    } else if (req.method == "GET") {
+      res.end(
+        await this.TurtleServer.getFromTurtle(
+          UserID,
+          req.headers.turtleid,
+          req.url.slice(1)
+        )
+      );
+    } else if (req.method == "POST") {
+      let turtle = this.TurtleServer.connections.turtles[UserID][req.headers.turtleid];
+
+      if (req.headers.lazyyield) {
+        req.body.replace(
+          /(turtle\.\w+)\(([^)(]*(?:\([^)(]*(?:\([^)(]*(?:\([^)(]*\)[^)(]*)*\)[^)(]*)*\)[^)(]*)*)\)/g,
+          "addyield($1, $2)"
         );
       }
-    } else if (req.method == "POST") {
-      if (!this.TurtleServer.checkForTurtle(UserID, req.headers.turtleid)) {
-        res.end("Turtle not connected");
-      } else {
-        let turtle =
-          this.TurtleServer.connections.turtles[UserID][req.headers.turtleid];
 
-        if (req.headers.lazyyield) {
-          req.body.replace(
-            /(turtle\.\w+)\(([^)(]*(?:\([^)(]*(?:\([^)(]*(?:\([^)(]*\)[^)(]*)*\)[^)(]*)*\)[^)(]*)*)\)/g,
-            "addyield($1, $2)"
-          );
-        }
-
-        turtle.send(req.body);
-        res.end();
-      }
+      turtle.send(req.body);
+      turtle.once("message", (data) => res.end(data));
     }
   }
   async handleHttpReq(req, res) {
